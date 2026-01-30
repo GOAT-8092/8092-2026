@@ -31,6 +31,8 @@ public final class Constants {
         public static final double WHEEL_DIAMETER = 0.1524;
         public static final double WHEEL_CIRCUMFERENCE = Math.PI * WHEEL_DIAMETER;
         public static final double GEARBOX_RATIO = 8.14;
+
+        public static final double MAX_SPEED_METERS_PER_SECOND = 4.5; // TODO: Tune this value
         
     }
 }
