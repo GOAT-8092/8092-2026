@@ -28,9 +28,11 @@ import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.FieldConstants;
 
 public class DriveSubsystem extends SubsystemBase {
   private MecanumDrive mecanumDrive;
@@ -40,13 +42,16 @@ public class DriveSubsystem extends SubsystemBase {
   private SparkMax rearRightMotor;
   private SparkMax frontRightMotor;
 
-  private AHRS navx;
+    private AHRS navx;
+    private double simulatedHeading = 0.0; // For simulation
 
   private MecanumDriveKinematics kinematics;
 
   private MecanumDriveOdometry odometry;
 
   private Field2d field;
+
+  // No-op: motor-test controls handled in periodic via SmartDashboard toggles
 
  
   public DriveSubsystem(int frontLeftMotorID, int frontRightMotorID, int rearLeftMotorID, int rearRightMotorID, Pose2d initialPose) {
@@ -65,7 +70,13 @@ public class DriveSubsystem extends SubsystemBase {
     rearRightMotor.configure(MotorConstants.REAR_RIGHT_MOTOR_INVERTED ? reversedConfig : nonReversedConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
     frontRightMotor.configure(MotorConstants.FRONT_RIGHT_MOTOR_INVERTED ? reversedConfig : nonReversedConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 
-    navx = new AHRS(NavXComType.kMXP_SPI);
+    // Initialize gyro based on robot mode
+    if (RobotBase.isReal()) {
+      navx = new AHRS(NavXComType.kMXP_SPI);
+    } else {
+      // Simulation mode - no physical NavX
+      navx = null;
+    }
     
     kinematics = new MecanumDriveKinematics(
       DriveConstants.WHEEL_POSITIONS[0],
@@ -77,6 +88,8 @@ public class DriveSubsystem extends SubsystemBase {
     odometry = new MecanumDriveOdometry(kinematics, getHeading(), getWheelPositions(), initialPose);
 
     field = new Field2d();
+
+    FieldConstants.setupField(field);
 
     mecanumDrive = new MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
     
@@ -104,7 +117,7 @@ public class DriveSubsystem extends SubsystemBase {
             this
     );
 
-    SmartDashboard.putData(field);
+  SmartDashboard.putData(field);
     
   }
 
@@ -134,18 +147,107 @@ public class DriveSubsystem extends SubsystemBase {
     rearRightMotor.set(rearRightOutput);
   }
 
-  @Override
-  public void periodic() {
-    odometry.update(getHeading(), getWheelPositions());
-    field.setRobotPose(odometry.getPoseMeters());
-
-    SmartDashboard.putNumber("Robot X", getPose().getX());
-    SmartDashboard.putNumber("Robot Y", getPose().getY());
-    SmartDashboard.putNumber("Robot Heading", getHeading().getDegrees());
+  // Test helpers: set individual motors directly for bench testing.
+  public void testSetFrontLeft(double speed) {
+    if (frontLeftMotor != null) frontLeftMotor.set(speed);
   }
 
+  public void testSetFrontRight(double speed) {
+    if (frontRightMotor != null) frontRightMotor.set(speed);
+  }
+
+  public void testSetRearLeft(double speed) {
+    if (rearLeftMotor != null) rearLeftMotor.set(speed);
+  }
+
+  public void testSetRearRight(double speed) {
+    if (rearRightMotor != null) rearRightMotor.set(speed);
+  }
+
+  public void stopAllMotors() {
+    if (frontLeftMotor != null) frontLeftMotor.set(0);
+    if (frontRightMotor != null) frontRightMotor.set(0);
+    if (rearLeftMotor != null) rearLeftMotor.set(0);
+    if (rearRightMotor != null) rearRightMotor.set(0);
+  }
+
+    @Override
+    public void periodic() {
+        // Only update odometry in autonomous mode to prevent drift issues in teleop
+        if (DriverStation.isAutonomous()) {
+            if (RobotBase.isReal()) {
+                odometry.update(getHeading(), getWheelPositions());
+            } else {
+                // Simulation - update heading based on wheel movements
+                // This is a simple approximation for simulation
+                // Approximate rotation based on velocity difference (simple sim)
+                simulatedHeading += (getVelocity(frontRightMotor.getEncoder()) - getVelocity(frontLeftMotor.getEncoder())) * 0.01;
+                odometry.update(getHeading(), getWheelPositions());
+            }
+        }
+
+        field.setRobotPose(odometry.getPoseMeters());
+
+        // Add robot visualization elements
+        field.getObject("Robot_Outline").setPoses(
+            new Pose2d(-0.3, -0.3, new Rotation2d()).relativeTo(getPose()),
+            new Pose2d(0.3, -0.3, new Rotation2d()).relativeTo(getPose()),
+            new Pose2d(0.3, 0.3, new Rotation2d()).relativeTo(getPose()),
+            new Pose2d(-0.3, 0.3, new Rotation2d()).relativeTo(getPose()),
+            new Pose2d(-0.3, -0.3, new Rotation2d()).relativeTo(getPose())
+        );
+
+        SmartDashboard.putNumber("Robot X", getPose().getX());
+        SmartDashboard.putNumber("Robot Y", getPose().getY());
+        SmartDashboard.putNumber("Robot Heading", getHeading().getDegrees());
+
+  // Publish motor outputs for debugging (if using speed-based control)
+  SmartDashboard.putNumber("Drive/FrontLeftOutput", frontLeftMotor != null ? frontLeftMotor.get() : 0.0);
+  SmartDashboard.putNumber("Drive/FrontRightOutput", frontRightMotor != null ? frontRightMotor.get() : 0.0);
+  SmartDashboard.putNumber("Drive/RearLeftOutput", rearLeftMotor != null ? rearLeftMotor.get() : 0.0);
+  SmartDashboard.putNumber("Drive/RearRightOutput", rearRightMotor != null ? rearRightMotor.get() : 0.0);
+
+  // Read motor test toggles from SmartDashboard and schedule/cancel commands
+  boolean flToggle = SmartDashboard.getBoolean("MotorTest/FrontLeft", false);
+  boolean frToggle = SmartDashboard.getBoolean("MotorTest/FrontRight", false);
+  boolean rlToggle = SmartDashboard.getBoolean("MotorTest/RearLeft", false);
+  boolean rrToggle = SmartDashboard.getBoolean("MotorTest/RearRight", false);
+
+  // Only allow manual motor test outputs while robot is disabled (safe bench testing)
+  if (DriverStation.isDisabled()) {
+    if (flToggle) {
+      testSetFrontLeft(0.2);
+    } else {
+      testSetFrontLeft(0.0);
+    }
+
+    if (frToggle) {
+      testSetFrontRight(0.2);
+    } else {
+      testSetFrontRight(0.0);
+    }
+
+    if (rlToggle) {
+      testSetRearLeft(0.2);
+    } else {
+      testSetRearLeft(0.0);
+    }
+
+    if (rrToggle) {
+      testSetRearRight(0.2);
+    } else {
+      testSetRearRight(0.0);
+    }
+  }
+    }
+
   public Rotation2d getHeading() {
-    return Rotation2d.fromDegrees(navx.getYaw()); //FIXME: Check if this needs to be negated
+    if (RobotBase.isReal() && navx != null) {
+      return Rotation2d.fromDegrees(navx.getYaw());
+    } else {
+      // Simulation - return simulated heading
+      return Rotation2d.fromDegrees(simulatedHeading);
+    }
   }
 
   public MecanumDriveWheelPositions getWheelPositions() {
@@ -194,7 +296,11 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void zeroHeading() {
-    navx.reset();
+    if (RobotBase.isReal() && navx != null) {
+      navx.reset();
+    } else {
+      simulatedHeading = 0.0;
+    }
   }
 
 }

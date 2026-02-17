@@ -33,7 +33,16 @@ public class DriveCommand extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
-    driveSubsystem.drive(ySpeed.getAsDouble(), xSpeed.getAsDouble(), zRotation.getAsDouble());
+    double y = ySpeed.getAsDouble();
+    double x = xSpeed.getAsDouble();
+    double z = zRotation.getAsDouble();
+
+    // Deadband to prevent joystick drift
+    if (Math.abs(y) < 0.05) y = 0;
+    if (Math.abs(x) < 0.05) x = 0;
+    if (Math.abs(z) < 0.05) z = 0;
+
+    driveSubsystem.drive(y, x, z);
   }
 
   // Called once the command ends or is interrupted.
