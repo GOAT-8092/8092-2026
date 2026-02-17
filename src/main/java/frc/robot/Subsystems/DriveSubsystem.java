@@ -122,11 +122,12 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public void drive(double ySpeed, double xSpeed, double zRotation) {
-    mecanumDrive.driveCartesian(ySpeed, xSpeed, zRotation);
+    // WPILib expects (xSpeed, ySpeed, zRotation).
+    mecanumDrive.driveCartesian(xSpeed, ySpeed, zRotation);
   }
 
   public void drive(double ySpeed, double xSpeed, double zRotation, Rotation2d gyroAngle) {
-    mecanumDrive.driveCartesian(ySpeed, xSpeed, zRotation, gyroAngle);
+    mecanumDrive.driveCartesian(xSpeed, ySpeed, zRotation, gyroAngle);
   }
 
   public void driveRobotRelative(ChassisSpeeds speeds) {

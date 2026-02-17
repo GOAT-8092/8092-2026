@@ -7,6 +7,7 @@ package frc.robot;
 import com.pathplanner.lib.auto.AutoBuilder;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Joystick;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -80,8 +81,10 @@ public class RobotContainer {
         .whileTrue(new TurretTrackCommand(turretSubsystem, visionSubsystem));
 
     // Operator controls
-    new JoystickButton(operatorJoystick, OIConstants.SHOOT_BUTTON)
-        .whileTrue(new ShootCommand(shooterSubsystem, 2.0)); // Shoot for 2 seconds
+    if (DriverStation.isJoystickConnected(OIConstants.OPERATOR_CONTROLLER_PORT)) {
+      new JoystickButton(operatorJoystick, OIConstants.SHOOT_BUTTON)
+          .whileTrue(new ShootCommand(shooterSubsystem, 2.0)); // Shoot for 2 seconds
+    }
   }
 
   public void resetSensors() {
