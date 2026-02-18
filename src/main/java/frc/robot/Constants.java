@@ -108,6 +108,12 @@ public final class Constants {
         public static final int ALIGN_BUTTON = 2; // Cross (X)
         public static final int TURRET_TRACK_BUTTON = 3; // Circle
 
+        // Test buttons - motor testleri için (PS4 Share tuşu ve trigger'lar)
+        public static final int TEST_FORWARD_BUTTON = 8; // Share
+        public static final int TEST_TURN_RIGHT_BUTTON = 5; // R2
+        public static final int TEST_TURN_LEFT_BUTTON = 7; // L2
+        public static final int TEST_STRAFE_BUTTON = 1; // Triangle
+
         // Operator buttons
         public static final int SHOOT_BUTTON = 1;
     }

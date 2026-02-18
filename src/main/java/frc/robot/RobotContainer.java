@@ -25,6 +25,12 @@ import frc.robot.Commands.ShootCommand;
 import frc.robot.Commands.TurretTrackCommand;
 import frc.robot.Commands.AlignToTargetCommand;
 import frc.robot.Commands.MotorTestCommand;
+import frc.robot.Commands.TestModes.SingleMotorTest;
+import frc.robot.Commands.TestModes.ForwardDriveTest;
+import frc.robot.Commands.TestModes.TurnRightTest;
+import frc.robot.Commands.TestModes.TurnLeftTest;
+import frc.robot.Commands.TestModes.StrafeRightTest;
+import frc.robot.Commands.TestModes.JoystickAxisTest;
 import frc.robot.Constants.*;
 
 public class RobotContainer {
@@ -76,6 +82,25 @@ public class RobotContainer {
   SmartDashboard.putNumber("NavXTest/LastYawEndDeg", 0.0);
   SmartDashboard.putNumber("NavXTest/DeltaDeg", 0.0);
 
+  // === MOTOR TEST KOMUTLARI (Teleop modda çalışır) ===
+  // SmartDashboard'dan tetiklenebilir testler
+  SmartDashboard.putData("Test/Front Left Motor", new SingleMotorTest(driveSubsystem, MotorConstants.FRONT_LEFT_MOTOR_ID, 0.3));
+  SmartDashboard.putData("Test/Front Right Motor", new SingleMotorTest(driveSubsystem, MotorConstants.FRONT_RIGHT_MOTOR_ID, 0.3));
+  SmartDashboard.putData("Test/Rear Left Motor", new SingleMotorTest(driveSubsystem, MotorConstants.REAR_LEFT_MOTOR_ID, 0.3));
+  SmartDashboard.putData("Test/Rear Right Motor", new SingleMotorTest(driveSubsystem, MotorConstants.REAR_RIGHT_MOTOR_ID, 0.3));
+
+  SmartDashboard.putData("Test/Forward Drive", new ForwardDriveTest(driveSubsystem, 0.3));
+  SmartDashboard.putData("Test/Turn Right", new TurnRightTest(driveSubsystem, 0.3));
+  SmartDashboard.putData("Test/Turn Left", new TurnLeftTest(driveSubsystem, 0.3));
+  SmartDashboard.putData("Test/Strafe Right", new StrafeRightTest(driveSubsystem, 0.3));
+
+  // Joystick eksen test komutu
+  SmartDashboard.putData("Test/Joystick Axes", new JoystickAxisTest(
+      () -> driverController.getRawAxis(OIConstants.DRIVER_Y_AXIS),
+      () -> driverController.getRawAxis(OIConstants.DRIVER_X_AXIS),
+      () -> driverController.getRawAxis(OIConstants.DRIVER_Z_AXIS)
+  ));
+
   }
 
   private void configureBindings() {
@@ -88,6 +113,23 @@ public class RobotContainer {
 
     new JoystickButton(driverController, OIConstants.TURRET_TRACK_BUTTON)
         .whileTrue(new TurretTrackCommand(turretSubsystem, visionSubsystem));
+
+    // === TEST BUTONLARI (Teleop modda çalışır) ===
+    // Share tuşu: İleri sürüş testi
+    new JoystickButton(driverController, OIConstants.TEST_FORWARD_BUTTON)
+        .whileTrue(new ForwardDriveTest(driveSubsystem, 0.3));
+
+    // R2: Sağ dönüş testi
+    new JoystickButton(driverController, OIConstants.TEST_TURN_RIGHT_BUTTON)
+        .whileTrue(new TurnRightTest(driveSubsystem, 0.3));
+
+    // L2: Sol dönüş testi
+    new JoystickButton(driverController, OIConstants.TEST_TURN_LEFT_BUTTON)
+        .whileTrue(new TurnLeftTest(driveSubsystem, 0.3));
+
+    // Triangle: Sağa kayma testi
+    new JoystickButton(driverController, OIConstants.TEST_STRAFE_BUTTON)
+        .whileTrue(new StrafeRightTest(driveSubsystem, 0.3));
 
     // Operator controls
     if (DriverStation.isJoystickConnected(OIConstants.OPERATOR_CONTROLLER_PORT)) {
