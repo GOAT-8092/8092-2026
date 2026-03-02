@@ -87,3 +87,50 @@
 - `NAVX_E005`: Faz timeout
 - `NAVX_E006`: Disabled dÄ±ÅŸÄ±nda tetikleme
 - `NAVX_E007`: Yaw jump / outlier
+
+## Main Controller
+- `NI roboRIO 1.0` - Main robot controller running WPILib
+- Network Address: `10.80.92.4`
+
+## Power Distribution
+- `CTRE Power Distribution Panel (PDP)` - Distributes power to robot components
+- `CTRE Voltage Regulator Module (VRM)` - Provides regulated 12V and 5V power
+- `OptiFuse 120A Main Breaker` - Main circuit protection
+
+## Networking
+- `Vivid-Hosting VH-109 FRC Radio` - Robot wireless communication
+- Network Address: `10.80.92.11`
+- Team: `8092`
+
+## Vision System
+- The robot uses a `Limelight 3` camera for AprilTag detection.
+- `LimelightHelpers.java` - Complete Limelight API wrapper (vendor library helper)
+- Camera: `OV5647` color rolling shutter (`640x480 @ 90 FPS`)
+- Field of View: `62.5°` horizontal, `48.9°` vertical
+- Network address: `10.80.92.200`
+- Web interface: `http://10.80.92.200:5801`
+- AprilTag pipeline for game piece alignment
+- Targets tags `12` and `15`
+- Constants in `VisionConstants` include PID tuning and speed limits
+
+## Network Addresses
+- Radio: `10.80.92.11` (`Vivid-Hosting VH-109`)
+- roboRIO: `10.80.92.4` (`NI roboRIO 1.0`)
+- Limelight: `10.80.92.200` (`Limelight 3`)
+
+## MXP SPI
+- `NavX Gyroscope`
+
+## NEO Motor Specifications
+- Model: `REV-21-1650` (`NEO V1.1`)
+- Nominal voltage: `12V`
+- `Kv`: `473`
+- Free speed: `5676 RPM`
+- Free current: `1.8A`
+- Stall current (empirical): `105A`
+- Stall torque (empirical): `2.6 Nm`
+- Peak output power (empirical): `406W`
+- Typical output power @ `40A`: `380W`
+- Hall encoder: `42 counts/rev`
+- Shaft: `8mm keyed`, length `35mm`
+- Weight: `0.425 kg` (`0.938 lb`)
