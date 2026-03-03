@@ -109,17 +109,35 @@ public final class Constants {
         public static final double INTAKE_SPEED = 0.5;
         public static final double SHOOTER_SPEED = 0.8;
         public static final double TURRET_SPEED = 0.3;
+    }
 
-        // Vision constants
-        public static final double CAMERA_HEIGHT_METERS = 0.5;
-        public static final double TARGET_HEIGHT_METERS = 0.0;
-        public static final double CAMERA_PITCH_RADIANS = 0.0;
-
-        // Limelight constants
+    public static class VisionConstants {
+        // Limelight configuration
         public static final String LIMELIGHT_NAME = "limelight";
-        public static final double LIMELIGHT_ANGLE = 0.0;
-        public static final double LIMELIGHT_HEIGHT = 0.5;
-        public static final double TARGET_HEIGHT = 0.0;
+
+        // AprilTag FMAP source
+        public static final String FMAP_SOURCE = "FRC2026_ANDYMARK.fmap";
+        public static final int TOTAL_APRILTAGS = 32; // 16 per alliance side
+
+        // Camera mounting (MEASURE ON ROBOT - using defaults for now)
+        public static final double CAMERA_HEIGHT_METERS = 0.5;
+        public static final double CAMERA_PITCH_RADIANS = Math.toRadians(25.0);
+
+        // AprilTag settings
+        public static final double APRILTAG_SIZE_METERS = 0.1651; // 6.5 inches (from FMAP)
+        public static final double SPEAKER_TAG_HEIGHT_METERS = 0.889; // From FMAP Z coordinate
+
+        // Vision measurement confidence
+        public static final double VISION_MEASUREMENT_STD_DEV_SEC = 0.5;
+        public static final double AMBIGUITY_THRESHOLD = 0.2;
+
+        // Pose update rate
+        public static final double POSE_UPDATE_INTERVAL_SEC = 0.05; // 20Hz
+
+        // Legacy constants for backward compatibility with VisionSubsystem
+        public static final double TARGET_HEIGHT = SPEAKER_TAG_HEIGHT_METERS;
+        public static final double LIMELIGHT_HEIGHT = CAMERA_HEIGHT_METERS;
+        public static final double LIMELIGHT_ANGLE = Math.toDegrees(CAMERA_PITCH_RADIANS);
     }
 
     public static class NavXTestConstants {

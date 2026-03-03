@@ -16,23 +16,31 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.JoystickButton;
 import frc.robot.Subsystems.DriveSubsystem;
+import frc.robot.Subsystems.VisionSubsystem;
 import frc.robot.Commands.DriveCommand;
+import frc.robot.Commands.AlignToAprilTagCommand;
 import frc.robot.Constants.*;
 
 public class RobotContainer {
-  private DriveSubsystem driveSubsystem = new DriveSubsystem(
-      MotorConstants.REAR_LEFT_MOTOR_ID,
-      MotorConstants.FRONT_LEFT_MOTOR_ID,
-      MotorConstants.REAR_RIGHT_MOTOR_ID,
-      MotorConstants.FRONT_RIGHT_MOTOR_ID,
-      new Pose2d()
-  );
-
+  private VisionSubsystem visionSubsystem;
+  private DriveSubsystem driveSubsystem;
   private Joystick driverJoystick = new Joystick(0);
 
   private SendableChooser<Command> autoChooser;
 
   public RobotContainer() {
+    // Instantiate vision subsystem first
+    visionSubsystem = new VisionSubsystem();
+
+    // Pass vision subsystem to drive subsystem for pose estimation
+    driveSubsystem = new DriveSubsystem(
+      MotorConstants.REAR_LEFT_MOTOR_ID,
+      MotorConstants.FRONT_LEFT_MOTOR_ID,
+      MotorConstants.REAR_RIGHT_MOTOR_ID,
+      MotorConstants.FRONT_RIGHT_MOTOR_ID,
+      new Pose2d(),
+      visionSubsystem
+    );
     configureBindings();
     driveSubsystem.setDefaultCommand(
         new DriveCommand(
@@ -71,6 +79,20 @@ public class RobotContainer {
     // Button 4: Run Front Right Motor (ID 3) - inverted in hardware
     new JoystickButton(driverJoystick, 4)
         .whileTrue(new RunCommand(() -> driveSubsystem.runFrontRightMotor(0.3), driveSubsystem));
+
+    // Button 5: Reset pose from vision (AprilTag detection)
+    new JoystickButton(driverJoystick, 5)
+        .onTrue(new RunCommand(() -> driveSubsystem.resetPoseFromVision(), driveSubsystem));
+
+    // Button 6: Align to AprilTag (vision alignment)
+    // Aligns robot to face and drive toward AprilTag 1
+    new JoystickButton(driverJoystick, 6)
+        .whileTrue(new AlignToAprilTagCommand(
+            driveSubsystem,
+            visionSubsystem,
+            1,      // Target AprilTag ID
+            1.0     // Stop 1 meter in front of tag
+        ));
   }
 
   public void resetSensors() {
@@ -80,6 +102,14 @@ public class RobotContainer {
 
   public Command getAutonomousCommand() {
     return autoChooser.getSelected();
+  }
+
+  /**
+   * Get the vision subsystem instance
+   * @return VisionSubsystem
+   */
+  public VisionSubsystem getVisionSubsystem() {
+    return visionSubsystem;
   }
 
 }

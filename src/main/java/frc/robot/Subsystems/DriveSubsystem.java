@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.MecanumDriveOdometry;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -33,6 +34,7 @@ import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.MotorConstants;
 import frc.robot.Constants.DriveConstants;
+import frc.robot.Constants.VisionConstants;
 import frc.robot.Constants.NavXTestConstants;
 import frc.robot.FieldConstants;
 
@@ -74,10 +76,18 @@ public class DriveSubsystem extends SubsystemBase {
   private String navXValidationStatus = "IDLE";
   private String navXValidationErrorCode = "OK";
 
+  // Vision subsystem for pose estimation
+  private VisionSubsystem visionSubsystem;
+  private double lastVisionUpdateTimestamp = 0;
+
   // No-op: motor-test controls handled in periodic via SmartDashboard toggles
 
- 
+
   public DriveSubsystem(int frontLeftMotorID, int frontRightMotorID, int rearLeftMotorID, int rearRightMotorID, Pose2d initialPose) {
+      this(frontLeftMotorID, frontRightMotorID, rearLeftMotorID, rearRightMotorID, initialPose, null);
+  }
+
+  public DriveSubsystem(int frontLeftMotorID, int frontRightMotorID, int rearLeftMotorID, int rearRightMotorID, Pose2d initialPose, VisionSubsystem visionSubsystem) {
     rearLeftMotor = new SparkMax(rearLeftMotorID, MotorType.kBrushless);
     frontLeftMotor = new SparkMax(frontLeftMotorID, MotorType.kBrushless);
     rearRightMotor = new SparkMax(rearRightMotorID, MotorType.kBrushless);
@@ -127,7 +137,10 @@ public class DriveSubsystem extends SubsystemBase {
     FieldConstants.setupField(field);
 
     mecanumDrive = new MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
-    
+
+    // Store vision subsystem reference
+    this.visionSubsystem = visionSubsystem;
+
     RobotConfig config = null;
     try {
       config = RobotConfig.fromGUISettings();
@@ -175,16 +188,22 @@ public class DriveSubsystem extends SubsystemBase {
     setSpeeds(wheelSpeeds);
   }
 
-  public void setSpeeds(MecanumDriveWheelSpeeds wheelSpeeds) {    
+  public void setSpeeds(MecanumDriveWheelSpeeds wheelSpeeds) {
     double frontLeftOutput = wheelSpeeds.frontLeftMetersPerSecond / DriveConstants.MAX_SPEED_METERS_PER_SECOND;
     double frontRightOutput = wheelSpeeds.frontRightMetersPerSecond / DriveConstants.MAX_SPEED_METERS_PER_SECOND;
     double rearLeftOutput = wheelSpeeds.rearLeftMetersPerSecond / DriveConstants.MAX_SPEED_METERS_PER_SECOND;
     double rearRightOutput = wheelSpeeds.rearRightMetersPerSecond / DriveConstants.MAX_SPEED_METERS_PER_SECOND;
-    
+
     frontLeftMotor.set(frontLeftOutput);
     frontRightMotor.set(frontRightOutput);
     rearLeftMotor.set(rearLeftOutput);
     rearRightMotor.set(rearRightOutput);
+
+    // Feed MotorSafety watchdog since we're setting motors directly
+    // This is important for PathPlanner which calls setSpeeds() directly
+    if (mecanumDrive != null) {
+      mecanumDrive.feed();
+    }
   }
 
   // Test helpers: set individual motors directly for bench testing.
@@ -401,23 +420,69 @@ public class DriveSubsystem extends SubsystemBase {
     }
   }
 
+  /**
+   * Update odometry with vision measurements from AprilTags
+   * This corrects odometry drift over time
+   */
+  private void updateVisionMeasurements() {
+    if (visionSubsystem == null) {
+      return;
+    }
+
+    VisionSubsystem.VisionResult result = visionSubsystem.getRobotPoseFromAprilTag();
+
+    if (result.valid && Timer.getFPGATimestamp() - lastVisionUpdateTimestamp >=
+        frc.robot.Constants.VisionConstants.POSE_UPDATE_INTERVAL_SEC) {
+
+      // Reset odometry with vision pose to correct drift
+      // This is a simple approach that works with MecanumDriveOdometry
+      odometry.resetPosition(getHeading(), getWheelPositions(), result.robotPose);
+
+      lastVisionUpdateTimestamp = Timer.getFPGATimestamp();
+
+      SmartDashboard.putBoolean("Drive/VisionUpdate", true);
+      SmartDashboard.putNumber("Drive/VisionTagID", result.tagId);
+    } else {
+      SmartDashboard.putBoolean("Drive/VisionUpdate", false);
+    }
+  }
+
+  /**
+   * Reset robot pose from vision (AprilTag detection)
+   * Useful for re-localizing robot on the field
+   */
+  public void resetPoseFromVision() {
+    if (visionSubsystem != null) {
+      VisionSubsystem.VisionResult result = visionSubsystem.getRobotPoseFromAprilTag();
+      if (result.valid) {
+        resetPose(result.robotPose);
+        DriverStation.reportWarning(
+            String.format("Pose reset from AprilTag %d at (%.2f, %.2f)",
+                result.tagId, result.robotPose.getX(), result.robotPose.getY()),
+            false);
+      }
+    }
+  }
+
     @Override
     public void periodic() {
         handleNavXValidationTrigger();
         runNavXValidationStateMachine();
 
-        // Only update odometry in autonomous mode to prevent drift issues in teleop
-        if (DriverStation.isAutonomous()) {
-            if (RobotBase.isReal()) {
-                odometry.update(getHeading(), getWheelPositions());
-            } else {
-                // Simulation - update heading based on wheel movements
-                // This is a simple approximation for simulation
-                // Approximate rotation based on velocity difference (simple sim)
-                simulatedHeading += (getVelocity(frontRightMotor.getEncoder()) - getVelocity(frontLeftMotor.getEncoder())) * 0.01;
-                odometry.update(getHeading(), getWheelPositions());
-            }
+        // Update odometry in all modes (autonomous and teleop)
+        // Vision measurements will correct drift regardless of mode
+        if (RobotBase.isReal()) {
+            odometry.update(getHeading(), getWheelPositions());
+        } else {
+            // Simulation - update heading based on wheel movements
+            // This is a simple approximation for simulation
+            // Approximate rotation based on velocity difference (simple sim)
+            simulatedHeading += (getVelocity(frontRightMotor.getEncoder()) - getVelocity(frontLeftMotor.getEncoder())) * 0.01;
+            odometry.update(getHeading(), getWheelPositions());
         }
+
+        // Update odometry with vision measurements to correct drift
+        updateVisionMeasurements();
 
         field.setRobotPose(odometry.getPoseMeters());
 
@@ -446,6 +511,12 @@ public class DriveSubsystem extends SubsystemBase {
   boolean frToggle = SmartDashboard.getBoolean("MotorTest/FrontRight", false);
   boolean rlToggle = SmartDashboard.getBoolean("MotorTest/RearLeft", false);
   boolean rrToggle = SmartDashboard.getBoolean("MotorTest/RearRight", false);
+
+  // Feed MotorSafety watchdog to prevent "Output not updated often enough" warnings
+  // This is especially important when PathPlanner controls motors directly via setSpeeds()
+  if (mecanumDrive != null) {
+    mecanumDrive.feed();
+  }
 
   // Only allow manual motor test outputs while robot is disabled (safe bench testing)
   if (DriverStation.isDisabled() && !isNavXValidationRunning()) {
