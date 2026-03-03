@@ -106,7 +106,7 @@
 - The robot uses a `Limelight 3` camera for AprilTag detection.
 - `LimelightHelpers.java` - Complete Limelight API wrapper (vendor library helper)
 - Camera: `OV5647` color rolling shutter (`640x480 @ 90 FPS`)
-- Field of View: `62.5°` horizontal, `48.9°` vertical
+- Field of View: `62.5Â°` horizontal, `48.9Â°` vertical
 - Network address: `10.80.92.200`
 - Web interface: `http://10.80.92.200:5801`
 - AprilTag pipeline for game piece alignment
