@@ -24,12 +24,16 @@ public class VisionSubsystem extends SubsystemBase {
     private final Object targetPoseEntry;
     private final Object fmapTagCountEntry;
     private final Object fmapSizeEntry;
+    private final Object pipelineEntry;
+    private final Object camModeEntry;
+    private final Object ledModeEntry;
 
     // Performance optimization: cache expensive operations
     private boolean cachedHasTarget = false;
     private VisionSubsystem.VisionResult cachedVisionResult = new VisionSubsystem.VisionResult();
     private int visionUpdateCounter = 0;
     private static final int VISION_UPDATE_RATE = 5;  // Update pose every 5 cycles (100ms)
+    private double lastConfigApplyTimestampSec = -1.0;
 
     /**
      * Result from AprilTag pose estimation
@@ -55,6 +59,12 @@ public class VisionSubsystem extends SubsystemBase {
         targetPoseEntry = limelightTable.getEntry("targetpose_cameraspace");
         fmapTagCountEntry = limelightTable.getEntry("fmap/tagCount");
         fmapSizeEntry = limelightTable.getEntry("fmap/size");
+        pipelineEntry = limelightTable.getEntry("pipeline");
+        camModeEntry = limelightTable.getEntry("camMode");
+        ledModeEntry = limelightTable.getEntry("ledMode");
+
+        // Push expected Limelight settings at startup so robot behavior is deterministic.
+        applyDesiredLimelightConfig();
     }
 
     public boolean hasTarget() {
@@ -116,6 +126,57 @@ public class VisionSubsystem extends SubsystemBase {
         int tagCount = getFmapTagCount();
         String fmapSize = ((edu.wpi.first.networktables.NetworkTableEntry)fmapSizeEntry).getString("Unknown");
         return String.format("FMAP: %d tags, Size: %s", tagCount, fmapSize);
+    }
+
+    public int getCurrentPipeline() {
+        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)pipelineEntry).getDouble(-1);
+    }
+
+    public int getCurrentCamMode() {
+        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)camModeEntry).getDouble(-1);
+    }
+
+    public int getCurrentLedMode() {
+        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)ledModeEntry).getDouble(-1);
+    }
+
+    public void applyDesiredLimelightConfig() {
+        ((edu.wpi.first.networktables.NetworkTableEntry)pipelineEntry).setNumber(VisionConstants.DESIRED_PIPELINE);
+        ((edu.wpi.first.networktables.NetworkTableEntry)camModeEntry).setNumber(VisionConstants.DESIRED_CAM_MODE);
+        ((edu.wpi.first.networktables.NetworkTableEntry)ledModeEntry).setNumber(VisionConstants.DESIRED_LED_MODE);
+        lastConfigApplyTimestampSec = Timer.getFPGATimestamp();
+    }
+
+    public boolean isLimelightConfigOk() {
+        boolean pipelineOk = getCurrentPipeline() == VisionConstants.DESIRED_PIPELINE;
+        boolean camModeOk = getCurrentCamMode() == VisionConstants.DESIRED_CAM_MODE;
+        boolean ledModeOk = getCurrentLedMode() == VisionConstants.DESIRED_LED_MODE;
+        boolean fmapLoaded = getFmapTagCount() > 0;
+        return pipelineOk && camModeOk && ledModeOk && fmapLoaded;
+    }
+
+    public String getLimelightConfigStatus() {
+        boolean pipelineOk = getCurrentPipeline() == VisionConstants.DESIRED_PIPELINE;
+        boolean camModeOk = getCurrentCamMode() == VisionConstants.DESIRED_CAM_MODE;
+        boolean ledModeOk = getCurrentLedMode() == VisionConstants.DESIRED_LED_MODE;
+        int fmapTagCount = getFmapTagCount();
+
+        if (!pipelineOk) {
+            return String.format("Pipeline mismatch (%d != %d)", getCurrentPipeline(), VisionConstants.DESIRED_PIPELINE);
+        }
+        if (!camModeOk) {
+            return String.format("CamMode mismatch (%d != %d)", getCurrentCamMode(), VisionConstants.DESIRED_CAM_MODE);
+        }
+        if (!ledModeOk) {
+            return String.format("LedMode mismatch (%d != %d)", getCurrentLedMode(), VisionConstants.DESIRED_LED_MODE);
+        }
+        if (fmapTagCount <= 0) {
+            return "FMAP not loaded (tagCount=0)";
+        }
+        if (fmapTagCount < VisionConstants.TOTAL_APRILTAGS) {
+            return String.format("FMAP partial (%d/%d tags)", fmapTagCount, VisionConstants.TOTAL_APRILTAGS);
+        }
+        return "OK";
     }
 
     /**
@@ -189,6 +250,12 @@ public class VisionSubsystem extends SubsystemBase {
     @Override
     public void periodic() {
         if (RobotBase.isReal()) {
+            double nowSec = Timer.getFPGATimestamp();
+            if (lastConfigApplyTimestampSec < 0
+                || nowSec - lastConfigApplyTimestampSec >= VisionConstants.CONFIG_REAPPLY_INTERVAL_SEC) {
+                applyDesiredLimelightConfig();
+            }
+
             // Update cached vision data (including expensive pose estimation)
             updateCachedVisionData();
 
@@ -209,6 +276,9 @@ public class VisionSubsystem extends SubsystemBase {
             // FMAP status (these rarely change, update every cycle is fine)
             SmartDashboard.putNumber("Vision/FmapTagCount", getFmapTagCount());
             SmartDashboard.putString("Vision/FmapStatus", getFmapStatus());
+            SmartDashboard.putNumber("Vision/Pipeline", getCurrentPipeline());
+            SmartDashboard.putBoolean("Vision/ConfigOk", isLimelightConfigOk());
+            SmartDashboard.putString("Vision/ConfigStatus", getLimelightConfigStatus());
 
             // Pose estimation data from cache (updated every VISION_UPDATE_RATE cycles)
             SmartDashboard.putBoolean("Vision/PoseValid", cachedVisionResult.valid);
