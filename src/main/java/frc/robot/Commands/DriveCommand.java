@@ -8,13 +8,19 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Constants.DriveControlConstants;
 import frc.robot.Subsystems.DriveSubsystem;
 
 /* You should consider using the more terse Command factories API instead https://docs.wpilib.org/en/stable/docs/software/commandbased/organizing-command-based.html#defining-commands */
 public class DriveCommand extends Command {
-  private final DriveSubsystem driveSubsystem;
+  @FunctionalInterface
+  public interface DriveOutput {
+    void drive(double ySpeed, double xSpeed, double zRotation);
+  }
+
+  private final DriveOutput driveOutput;
   private final DoubleSupplier ySpeed;
   private final DoubleSupplier xSpeed;
   private final DoubleSupplier zRotation;
@@ -24,12 +30,18 @@ public class DriveCommand extends Command {
 
 
   public DriveCommand(DoubleSupplier ySpeed, DoubleSupplier xSpeed, DoubleSupplier zRotation, DriveSubsystem driveSubsystem) {
-    this.driveSubsystem = driveSubsystem;
+    this(ySpeed, xSpeed, zRotation, driveSubsystem::drive, driveSubsystem);
+  }
+
+  DriveCommand(DoubleSupplier ySpeed, DoubleSupplier xSpeed, DoubleSupplier zRotation, DriveOutput driveOutput, Subsystem... requirements) {
+    this.driveOutput = driveOutput;
     this.ySpeed = ySpeed;
     this.xSpeed = xSpeed;
     this.zRotation = zRotation;
 
-    addRequirements(driveSubsystem);
+    if (requirements != null && requirements.length > 0) {
+      addRequirements(requirements);
+    }
   }
 
   // Called when the command is initially scheduled.
@@ -40,26 +52,16 @@ public class DriveCommand extends Command {
   @Override
   public void execute() {
     // Forward should be Y axis negative on this setup.
-    double y = -ySpeed.getAsDouble();
-    double x = xSpeed.getAsDouble();
-    double z = zRotation.getAsDouble();
-
-    y = MathUtil.applyDeadband(y, DriveControlConstants.DEADBAND);
-    x = MathUtil.applyDeadband(x, DriveControlConstants.DEADBAND);
-    z = MathUtil.applyDeadband(z, DriveControlConstants.DEADBAND);
-
-    // Input shaping gives finer low-speed control without losing top-end command.
-    // All axes use squared curve for smooth, precise control at low speeds
-    y = Math.copySign(y * y, y) * DriveControlConstants.TRANSLATION_SCALE;
-    x = Math.copySign(x * x, x) * DriveControlConstants.STRAFE_SCALE;
+    double y = shapeAxis(-ySpeed.getAsDouble(), DriveControlConstants.TRANSLATION_SCALE);
+    double x = shapeAxis(xSpeed.getAsDouble(), DriveControlConstants.STRAFE_SCALE);
     // Rotation also uses squared curve for smoother low-speed turning
-    z = Math.copySign(z * z, z) * DriveControlConstants.ROTATION_SCALE;
+    double z = shapeAxis(zRotation.getAsDouble(), DriveControlConstants.ROTATION_SCALE);
 
     double yCommand = yLimiter.calculate(y);
     double xCommand = xLimiter.calculate(x);
     double zCommand = zLimiter.calculate(z);
 
-    driveSubsystem.drive(yCommand, xCommand, zCommand);
+    driveOutput.drive(yCommand, xCommand, zCommand);
   }
 
   // Called once the command ends or is interrupted.
@@ -70,5 +72,10 @@ public class DriveCommand extends Command {
   @Override
   public boolean isFinished() {
     return false;
+  }
+
+  static double shapeAxis(double rawInput, double scale) {
+    double deadbanded = MathUtil.applyDeadband(rawInput, DriveControlConstants.DEADBAND);
+    return Math.copySign(deadbanded * deadbanded, deadbanded) * scale;
   }
 }

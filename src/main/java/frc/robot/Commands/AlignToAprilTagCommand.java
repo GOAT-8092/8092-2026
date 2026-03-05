@@ -3,6 +3,7 @@ package frc.robot.Commands;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Subsystems.DriveSubsystem;
 import frc.robot.Subsystems.VisionSubsystem;
@@ -70,9 +71,19 @@ public class AlignToAprilTagCommand extends Command {
 
     @Override
     public void initialize() {
+        System.out.println("===========================================");
+        System.out.println("ALIGN TO APRILTAG COMMAND INITIALIZED");
+        System.out.println("Target Tag ID: " + targetTagId);
+        System.out.println("Target Distance: " + targetDistanceMeters + " meters");
+        System.out.println("===========================================");
+
         // Determine alliance at command start
         isRedAlliance = DriverStation.getAlliance()
             .orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+
+        SmartDashboard.putString("AlignToAprilTag/Status", "Initializing");
+        SmartDashboard.putNumber("AlignToAprilTag/TargetTag", targetTagId);
+        SmartDashboard.putBoolean("AlignToAprilTag/IsRed", isRedAlliance);
     }
 
     @Override
@@ -80,8 +91,20 @@ public class AlignToAprilTagCommand extends Command {
         // Get vision result
         VisionSubsystem.VisionResult result = visionSubsystem.getRobotPoseFromAprilTag();
 
+        SmartDashboard.putBoolean("AlignToAprilTag/ResultValid", result.valid);
+        SmartDashboard.putNumber("AlignToAprilTag/ResultTagID", result.tagId);
+
         // If no valid vision target, stop
-        if (!result.valid || result.tagId != targetTagId) {
+        if (!result.valid) {
+            SmartDashboard.putString("AlignToAprilTag/Status", "No valid vision");
+            System.out.println("AlignToAprilTag: No valid vision - stopping");
+            driveSubsystem.stopAllMotors();
+            return;
+        }
+
+        if (result.tagId != targetTagId) {
+            SmartDashboard.putString("AlignToAprilTag/Status", "Wrong tag: " + result.tagId);
+            System.out.println("AlignToAprilTag: Wrong tag ID " + result.tagId + " (want " + targetTagId + ")");
             driveSubsystem.stopAllMotors();
             return;
         }
@@ -89,12 +112,17 @@ public class AlignToAprilTagCommand extends Command {
         // Get target tag pose from field layout
         Pose2d targetPose = AprilTagFieldLayout.getTagPose(targetTagId, isRedAlliance);
         if (targetPose == null) {
+            SmartDashboard.putString("AlignToAprilTag/Status", "Tag pose not found");
+            System.out.println("AlignToAprilTag: Tag pose not found for ID " + targetTagId);
             driveSubsystem.stopAllMotors();
             return;
         }
 
         // Current robot pose from vision
         Pose2d currentPose = result.robotPose;
+        System.out.println(String.format("AlignToAprilTag: Robot at (%.2f, %.2f, %.1f°), Tag at (%.2f, %.2f)",
+            currentPose.getX(), currentPose.getY(), currentPose.getRotation().getDegrees(),
+            targetPose.getX(), targetPose.getY()));
 
         // Calculate desired position (in front of tag, facing tag)
         // Target position = tag position - offset in direction tag is facing
@@ -119,10 +147,20 @@ public class AlignToAprilTagCommand extends Command {
         while (thetaError > Math.PI) thetaError -= 2 * Math.PI;
         while (thetaError < -Math.PI) thetaError += 2 * Math.PI;
 
+        // Debug output
+        SmartDashboard.putNumber("AlignToAprilTag/XError", xError);
+        SmartDashboard.putNumber("AlignToAprilTag/YError", yError);
+        SmartDashboard.putNumber("AlignToAprilTag/YawError", Math.toDegrees(thetaError));
+
         // Calculate drive outputs using PID
         double xSpeed = xController.calculate(xError, 0);
         double ySpeed = yController.calculate(yError, 0);
         double thetaSpeed = thetaController.calculate(Math.toDegrees(thetaError), 0);
+
+        SmartDashboard.putNumber("AlignToAprilTag/XSpeed", xSpeed);
+        SmartDashboard.putNumber("AlignToAprilTag/YSpeed", ySpeed);
+        SmartDashboard.putNumber("AlignToAprilTag/ThetaSpeed", thetaSpeed);
+        SmartDashboard.putString("AlignToAprilTag/Status", "Driving");
 
         // Drive the robot
         // Note: Using field-oriented drive for better control
@@ -169,11 +207,23 @@ public class AlignToAprilTagCommand extends Command {
 
         boolean atHeading = Math.toDegrees(headingError) < toleranceDegrees;
 
+        boolean finished = atPosition && atHeading;
+        if (finished) {
+            System.out.println("AlignToAprilTag: ALIGNMENT COMPLETE!");
+            System.out.println("  Position tolerance met: " + atPosition);
+            System.out.println("  Heading tolerance met: " + atHeading);
+        }
+
         return atPosition && atHeading;
     }
 
     @Override
     public void end(boolean interrupted) {
+        System.out.println("===========================================");
+        System.out.println("ALIGN TO APRILTAG COMMAND ENDING");
+        System.out.println("Interrupted: " + interrupted);
+        System.out.println("===========================================");
         driveSubsystem.stopAllMotors();
+        SmartDashboard.putString("AlignToAprilTag/Status", interrupted ? "Interrupted" : "Finished");
     }
 }

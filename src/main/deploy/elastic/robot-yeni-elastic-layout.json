@@ -1,0 +1,507 @@
+{
+  "version": 1.0,
+  "grid_size": 128,
+  "tabs": [
+    {
+      "name": "Teleop",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Field",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 384.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Field",
+              "period": 0.033,
+              "field_game": "Rebuilt",
+              "robot_width": 0.82,
+              "robot_length": 1.0,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
+            }
+          },
+          {
+            "title": "Robot Heading",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 256.0,
+            "type": "Gyro",
+            "properties": {
+              "topic": "/SmartDashboard/Robot Heading",
+              "period": 0.033,
+              "counter_clockwise_positive": false
+            }
+          },
+          {
+            "title": "Robot X (m)",
+            "x": 512.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Robot X",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Robot Y (m)",
+            "x": 640.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Robot Y",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Vision Update",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/VisionUpdate",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Field Oriented",
+            "x": 896.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/FieldOrientedEnabled",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Vision Tag ID",
+            "x": 768.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/VisionTagID",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "FL Output",
+            "x": 1024.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/FrontLeftOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "FR Output",
+            "x": 1152.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/FrontRightOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RL Output",
+            "x": 1024.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/RearLeftOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RR Output",
+            "x": 1152.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/RearRightOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "FMSInfo",
+            "x": 768.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "FMSInfo",
+            "properties": {
+              "topic": "/FMSInfo",
+              "period": 0.033
+            }
+          },
+          {
+            "title": "Match Time",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Match Time",
+            "properties": {
+              "topic": "/SmartDashboard/Match Time",
+              "period": 0.033,
+              "time_display_mode": "Minutes and Seconds",
+              "red_start_time": 15,
+              "yellow_start_time": 30
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Vision",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Has Target",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/HasTarget",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Pose Valid",
+            "x": 128.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/PoseValid",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Config OK",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/ConfigOk",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Horizontal Offset",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/HorizontalOffset",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Vertical Offset",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/VerticalOffset",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Target Area",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/TargetArea",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Distance To Target",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/DistanceToTarget",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Robot X",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/RobotX",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Robot Y",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/RobotY",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Robot Yaw",
+            "x": 512.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/RobotYaw",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Tag ID",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/TagID",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Ambiguity",
+            "x": 768.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/Ambiguity",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Config Status",
+            "x": 768.0,
+            "y": 256.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Vision/ConfigStatus",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Auto",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Auto Chooser",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Auto Chooser",
+              "period": 0.033,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "NavX Run",
+            "x": 384.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/NavXTest/Run",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "NavX Status",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/NavXTest/Status",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "NavX Error",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/NavXTest/ErrorCode",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Yaw Delta",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/NavXTest/DeltaDeg",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Yaw Start",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/NavXTest/LastYawStartDeg",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Yaw End",
+            "x": 512.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/NavXTest/LastYawEndDeg",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Field",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 256.0,
+            "type": "Field",
+            "properties": {
+              "topic": "/SmartDashboard/Field",
+              "period": 0.033,
+              "field_game": "Rebuilt",
+              "robot_width": 0.82,
+              "robot_length": 1.0,
+              "show_other_objects": true,
+              "show_trajectories": true,
+              "field_rotation": 0.0,
+              "robot_color": 4294198070,
+              "trajectory_color": 4294967295,
+              "show_robot_outside_widget": true
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

@@ -12,6 +12,7 @@ import frc.robot.Constants.MotorConstants;
 public class TurretSubsystem extends SubsystemBase {
     private SparkMax turretMotor;
     private RelativeEncoder turretEncoder;
+    private double lastCommandedSpeed = 0.0;
 
     public TurretSubsystem() {
         if (MotorConstants.ENABLE_NON_DRIVE_MOTORS) {
@@ -28,12 +29,14 @@ public class TurretSubsystem extends SubsystemBase {
     }
 
     public void rotate(double speed) {
+        lastCommandedSpeed = speed;
         if (turretMotor != null) {
             turretMotor.set(speed);
         }
     }
 
     public void stop() {
+        lastCommandedSpeed = 0.0;
         if (turretMotor != null) {
             turretMotor.set(0);
         }
@@ -53,5 +56,9 @@ public class TurretSubsystem extends SubsystemBase {
         double error = angle - currentAngle;
         double speed = error * 0.01; // Tune this
         rotate(speed);
+    }
+
+    public double getLastCommandedSpeed() {
+        return lastCommandedSpeed;
     }
 }

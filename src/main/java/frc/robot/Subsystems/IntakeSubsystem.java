@@ -10,6 +10,7 @@ import frc.robot.Constants.MotorConstants;
 
 public class IntakeSubsystem extends SubsystemBase {
     private SparkMax intakeMotor;
+    private double lastCommandedSpeed = 0.0;
 
     public IntakeSubsystem() {
         if (MotorConstants.ENABLE_NON_DRIVE_MOTORS) {
@@ -24,20 +25,27 @@ public class IntakeSubsystem extends SubsystemBase {
     }
 
     public void intake() {
+        lastCommandedSpeed = ModuleConstants.INTAKE_SPEED;
         if (intakeMotor != null) {
             intakeMotor.set(ModuleConstants.INTAKE_SPEED);
         }
     }
 
     public void outtake() {
+        lastCommandedSpeed = -ModuleConstants.INTAKE_SPEED;
         if (intakeMotor != null) {
             intakeMotor.set(-ModuleConstants.INTAKE_SPEED);
         }
     }
 
     public void stop() {
+        lastCommandedSpeed = 0.0;
         if (intakeMotor != null) {
             intakeMotor.set(0);
         }
+    }
+
+    public double getLastCommandedSpeed() {
+        return lastCommandedSpeed;
     }
 }

@@ -72,6 +72,7 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testImplementation 'org.mockito:mockito-core:5.12.0'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
@@ -79,6 +80,27 @@ test {
     useJUnitPlatform()
     systemProperty 'junit.jupiter.extensions.autodetection.enabled', 'true'
 }
+
+tasks.register('fastTest', Test) {
+    useJUnitPlatform {
+        includeTags 'fast'
+    }
+    maxParallelForks = 1
+    description = 'Runs fast unit and command tests.'
+    group = 'verification'
+}
+
+tasks.register('extendedSimTest', Test) {
+    useJUnitPlatform {
+        includeTags 'extended'
+    }
+    maxParallelForks = 1
+    description = 'Runs extended simulation-style tests.'
+    group = 'verification'
+}
+
+wpi.java.configureTestTasks(tasks.named('fastTest').get())
+wpi.java.configureTestTasks(tasks.named('extendedSimTest').get())
 
 // Simulation configuration (e.g. environment variables).
 wpi.sim.addGui().defaultEnabled = true

@@ -1,9 +1,10 @@
 package frc.robot.Subsystems;
 
-import edu.wpi.first.networktables.NetworkTable;
-import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.networktables.NetworkTable;
+import edu.wpi.first.networktables.NetworkTableEntry;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.RobotBase;
 import edu.wpi.first.wpilibj.Timer;
@@ -12,32 +13,85 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Constants.VisionConstants;
 
 public class VisionSubsystem extends SubsystemBase {
-    private NetworkTable limelightTable;
+    interface VisionIO {
+        double getDouble(String key, double defaultValue);
+        long getInteger(String key, long defaultValue);
+        String getString(String key, String defaultValue);
+        double[] getDoubleArray(String key, double[] defaultValue);
+        void setNumber(String key, double value);
+    }
 
-    // Cached NetworkTable entries for performance
-    private final Object tvEntry;
-    private final Object txEntry;
-    private final Object tyEntry;
-    private final Object taEntry;
-    private final Object tidEntry;
-    private final Object botPoseEntry;
-    private final Object targetPoseEntry;
-    private final Object fmapTagCountEntry;
-    private final Object fmapSizeEntry;
-    private final Object pipelineEntry;
-    private final Object camModeEntry;
-    private final Object ledModeEntry;
+    interface RuntimeIO {
+        boolean isReal();
+        double nowSec();
+        boolean isRedAlliance();
+    }
 
-    // Performance optimization: cache expensive operations
+    static class NetworkTableVisionIO implements VisionIO {
+        private final NetworkTable table;
+
+        NetworkTableVisionIO(String tableName) {
+            table = NetworkTableInstance.getDefault().getTable(tableName);
+        }
+
+        private NetworkTableEntry entry(String key) {
+            return table.getEntry(key);
+        }
+
+        @Override
+        public double getDouble(String key, double defaultValue) {
+            return entry(key).getDouble(defaultValue);
+        }
+
+        @Override
+        public long getInteger(String key, long defaultValue) {
+            return entry(key).getInteger(defaultValue);
+        }
+
+        @Override
+        public String getString(String key, String defaultValue) {
+            return entry(key).getString(defaultValue);
+        }
+
+        @Override
+        public double[] getDoubleArray(String key, double[] defaultValue) {
+            return entry(key).getDoubleArray(defaultValue);
+        }
+
+        @Override
+        public void setNumber(String key, double value) {
+            entry(key).setNumber(value);
+        }
+    }
+
+    static class WpiRuntimeIO implements RuntimeIO {
+        @Override
+        public boolean isReal() {
+            return RobotBase.isReal();
+        }
+
+        @Override
+        public double nowSec() {
+            return Timer.getFPGATimestamp();
+        }
+
+        @Override
+        public boolean isRedAlliance() {
+            return DriverStation.getAlliance()
+                .orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+        }
+    }
+
+    private final VisionIO io;
+    private final RuntimeIO runtime;
+
     private boolean cachedHasTarget = false;
-    private VisionSubsystem.VisionResult cachedVisionResult = new VisionSubsystem.VisionResult();
+    private VisionResult cachedVisionResult = new VisionResult();
     private int visionUpdateCounter = 0;
-    private static final int VISION_UPDATE_RATE = 5;  // Update pose every 5 cycles (100ms)
+    private static final int VISION_UPDATE_RATE = 5;
     private double lastConfigApplyTimestampSec = -1.0;
+    private boolean tuningInitialized = false;
 
-    /**
-     * Result from AprilTag pose estimation
-     */
     public static class VisionResult {
         public Pose2d robotPose;
         public int tagId;
@@ -47,23 +101,13 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public VisionSubsystem() {
-        limelightTable = NetworkTableInstance.getDefault().getTable(VisionConstants.LIMELIGHT_NAME);
+        this(new NetworkTableVisionIO(VisionConstants.LIMELIGHT_NAME), new WpiRuntimeIO());
+    }
 
-        // Cache NetworkTable entries for better performance
-        tvEntry = limelightTable.getEntry("tv");
-        txEntry = limelightTable.getEntry("tx");
-        tyEntry = limelightTable.getEntry("ty");
-        taEntry = limelightTable.getEntry("ta");
-        tidEntry = limelightTable.getEntry("tid");
-        botPoseEntry = limelightTable.getEntry("botpose_wpiblue");
-        targetPoseEntry = limelightTable.getEntry("targetpose_cameraspace");
-        fmapTagCountEntry = limelightTable.getEntry("fmap/tagCount");
-        fmapSizeEntry = limelightTable.getEntry("fmap/size");
-        pipelineEntry = limelightTable.getEntry("pipeline");
-        camModeEntry = limelightTable.getEntry("camMode");
-        ledModeEntry = limelightTable.getEntry("ledMode");
-
-        // Push expected Limelight settings at startup so robot behavior is deterministic.
+    VisionSubsystem(VisionIO io, RuntimeIO runtime) {
+        this.io = io;
+        this.runtime = runtime;
+        initializeTuningDashboard();
         applyDesiredLimelightConfig();
     }
 
@@ -72,103 +116,141 @@ public class VisionSubsystem extends SubsystemBase {
     }
 
     public double getHorizontalOffset() {
-        return ((edu.wpi.first.networktables.NetworkTableEntry)txEntry).getDouble(0);
+        return io.getDouble("tx", 0);
     }
 
     public double getVerticalOffset() {
-        return ((edu.wpi.first.networktables.NetworkTableEntry)tyEntry).getDouble(0);
+        return io.getDouble("ty", 0);
     }
 
     public double getTargetArea() {
-        return ((edu.wpi.first.networktables.NetworkTableEntry)taEntry).getDouble(0);
+        return io.getDouble("ta", 0);
     }
 
     public double getTargetSkew() {
-        return limelightTable.getEntry("ts").getDouble(0);
+        return io.getDouble("ts", 0);
     }
 
     public double getDistanceToTarget() {
-        double targetOffsetAngle_Vertical = getVerticalOffset();
-
-        double angleToGoalDegrees = VisionConstants.LIMELIGHT_ANGLE + targetOffsetAngle_Vertical;
+        double targetOffsetAngleVertical = getVerticalOffset();
+        double angleToGoalDegrees = VisionConstants.LIMELIGHT_ANGLE + targetOffsetAngleVertical;
         double angleToGoalRadians = angleToGoalDegrees * (Math.PI / 180.0);
-
-        double distanceFromLimelightToGoalInches = (VisionConstants.TARGET_HEIGHT - VisionConstants.LIMELIGHT_HEIGHT) / Math.tan(angleToGoalRadians);
-
-        return distanceFromLimelightToGoalInches * 0.0254; // Convert to meters
+        double distanceInches =
+            (VisionConstants.TARGET_HEIGHT - VisionConstants.LIMELIGHT_HEIGHT) / Math.tan(angleToGoalRadians);
+        return distanceInches * 0.0254;
     }
 
-    /**
-     * Get the ID of the currently detected AprilTag
-     * @return Tag ID, or 0 if no target detected
-     */
     public int getTagId() {
         if (!hasTarget()) {
             return 0;
         }
-        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)tidEntry).getInteger(0);
+        return (int) io.getInteger("tid", 0);
     }
 
-    /**
-     * Check if Limelight has a valid FMAP loaded
-     * @return Number of AprilTags in FMAP, or 0 if not loaded
-     */
     public int getFmapTagCount() {
-        // Limelight publishes the number of tags in its loaded FMAP
-        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)fmapTagCountEntry).getInteger(0);
+        return (int) io.getInteger("fmap/tagCount", 0);
     }
 
-    /**
-     * Get FMAP status information for debugging
-     * @return Status string with FMAP info
-     */
     public String getFmapStatus() {
         int tagCount = getFmapTagCount();
-        String fmapSize = ((edu.wpi.first.networktables.NetworkTableEntry)fmapSizeEntry).getString("Unknown");
+        String fmapSize = io.getString("fmap/size", "Unknown");
         return String.format("FMAP: %d tags, Size: %s", tagCount, fmapSize);
     }
 
     public int getCurrentPipeline() {
-        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)pipelineEntry).getDouble(-1);
+        return (int) io.getDouble("pipeline", -1);
     }
 
     public int getCurrentCamMode() {
-        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)camModeEntry).getDouble(-1);
+        return (int) io.getDouble("camMode", -1);
     }
 
     public int getCurrentLedMode() {
-        return (int) ((edu.wpi.first.networktables.NetworkTableEntry)ledModeEntry).getDouble(-1);
+        return (int) io.getDouble("ledMode", -1);
+    }
+
+    public int getCurrentStreamMode() {
+        return (int) io.getDouble("stream", -1);
+    }
+
+    private void initializeTuningDashboard() {
+        SmartDashboard.putBoolean("Vision/Tune/Enable", false);
+        SmartDashboard.putNumber("Vision/Tune/Pipeline", VisionConstants.DESIRED_PIPELINE);
+        SmartDashboard.putNumber("Vision/Tune/SourceImageCamMode", VisionConstants.DESIRED_CAM_MODE);
+        SmartDashboard.putNumber("Vision/Tune/LEDMode", VisionConstants.DESIRED_LED_MODE);
+        SmartDashboard.putNumber("Vision/Tune/StreamMode", VisionConstants.DESIRED_STREAM_MODE);
+        SmartDashboard.putString("Vision/Tune/Unsupported", "Resolution, Stream Orientation, Exposure, LED Power -> Limelight UI");
+        tuningInitialized = true;
+    }
+
+    private int getDesiredPipeline() {
+        if (SmartDashboard.getBoolean("Vision/Tune/Enable", false)) {
+            return (int) SmartDashboard.getNumber("Vision/Tune/Pipeline", VisionConstants.DESIRED_PIPELINE);
+        }
+        return VisionConstants.DESIRED_PIPELINE;
+    }
+
+    private int getDesiredCamMode() {
+        if (SmartDashboard.getBoolean("Vision/Tune/Enable", false)) {
+            return (int) SmartDashboard.getNumber("Vision/Tune/SourceImageCamMode", VisionConstants.DESIRED_CAM_MODE);
+        }
+        return VisionConstants.DESIRED_CAM_MODE;
+    }
+
+    private int getDesiredLedMode() {
+        if (SmartDashboard.getBoolean("Vision/Tune/Enable", false)) {
+            return (int) SmartDashboard.getNumber("Vision/Tune/LEDMode", VisionConstants.DESIRED_LED_MODE);
+        }
+        return VisionConstants.DESIRED_LED_MODE;
+    }
+
+    private int getDesiredStreamMode() {
+        if (SmartDashboard.getBoolean("Vision/Tune/Enable", false)) {
+            return (int) SmartDashboard.getNumber("Vision/Tune/StreamMode", VisionConstants.DESIRED_STREAM_MODE);
+        }
+        return VisionConstants.DESIRED_STREAM_MODE;
     }
 
     public void applyDesiredLimelightConfig() {
-        ((edu.wpi.first.networktables.NetworkTableEntry)pipelineEntry).setNumber(VisionConstants.DESIRED_PIPELINE);
-        ((edu.wpi.first.networktables.NetworkTableEntry)camModeEntry).setNumber(VisionConstants.DESIRED_CAM_MODE);
-        ((edu.wpi.first.networktables.NetworkTableEntry)ledModeEntry).setNumber(VisionConstants.DESIRED_LED_MODE);
-        lastConfigApplyTimestampSec = Timer.getFPGATimestamp();
+        io.setNumber("pipeline", getDesiredPipeline());
+        io.setNumber("camMode", getDesiredCamMode());
+        io.setNumber("ledMode", getDesiredLedMode());
+        io.setNumber("stream", getDesiredStreamMode());
+        lastConfigApplyTimestampSec = runtime.nowSec();
     }
 
     public boolean isLimelightConfigOk() {
-        boolean pipelineOk = getCurrentPipeline() == VisionConstants.DESIRED_PIPELINE;
-        boolean camModeOk = getCurrentCamMode() == VisionConstants.DESIRED_CAM_MODE;
-        boolean ledModeOk = getCurrentLedMode() == VisionConstants.DESIRED_LED_MODE;
+        boolean pipelineOk = getCurrentPipeline() == getDesiredPipeline();
+        boolean camModeOk = getCurrentCamMode() == getDesiredCamMode();
+        boolean ledModeOk = getCurrentLedMode() == getDesiredLedMode();
+        boolean streamOk = getCurrentStreamMode() == getDesiredStreamMode();
         boolean fmapLoaded = getFmapTagCount() > 0;
-        return pipelineOk && camModeOk && ledModeOk && fmapLoaded;
+        return pipelineOk && camModeOk && ledModeOk && streamOk && fmapLoaded;
     }
 
     public String getLimelightConfigStatus() {
-        boolean pipelineOk = getCurrentPipeline() == VisionConstants.DESIRED_PIPELINE;
-        boolean camModeOk = getCurrentCamMode() == VisionConstants.DESIRED_CAM_MODE;
-        boolean ledModeOk = getCurrentLedMode() == VisionConstants.DESIRED_LED_MODE;
+        int desiredPipeline = getDesiredPipeline();
+        int desiredCamMode = getDesiredCamMode();
+        int desiredLedMode = getDesiredLedMode();
+        int desiredStreamMode = getDesiredStreamMode();
+
+        boolean pipelineOk = getCurrentPipeline() == desiredPipeline;
+        boolean camModeOk = getCurrentCamMode() == desiredCamMode;
+        boolean ledModeOk = getCurrentLedMode() == desiredLedMode;
+        boolean streamOk = getCurrentStreamMode() == desiredStreamMode;
         int fmapTagCount = getFmapTagCount();
 
         if (!pipelineOk) {
-            return String.format("Pipeline mismatch (%d != %d)", getCurrentPipeline(), VisionConstants.DESIRED_PIPELINE);
+            return String.format("Pipeline mismatch (%d != %d)", getCurrentPipeline(), desiredPipeline);
         }
         if (!camModeOk) {
-            return String.format("CamMode mismatch (%d != %d)", getCurrentCamMode(), VisionConstants.DESIRED_CAM_MODE);
+            return String.format("CamMode mismatch (%d != %d)", getCurrentCamMode(), desiredCamMode);
         }
         if (!ledModeOk) {
-            return String.format("LedMode mismatch (%d != %d)", getCurrentLedMode(), VisionConstants.DESIRED_LED_MODE);
+            return String.format("LedMode mismatch (%d != %d)", getCurrentLedMode(), desiredLedMode);
+        }
+        if (!streamOk) {
+            return String.format("Stream mismatch (%d != %d)", getCurrentStreamMode(), desiredStreamMode);
         }
         if (fmapTagCount <= 0) {
             return "FMAP not loaded (tagCount=0)";
@@ -179,21 +261,12 @@ public class VisionSubsystem extends SubsystemBase {
         return "OK";
     }
 
-    /**
-     * Internal method to update cached vision data
-     * Call this periodically instead of every cycle
-     */
     private void updateCachedVisionData() {
-        // Update hasTarget cache
-        cachedHasTarget = ((edu.wpi.first.networktables.NetworkTableEntry)tvEntry).getDouble(0) == 1;
-
-        // Only update pose estimation every N cycles to save performance
+        cachedHasTarget = io.getDouble("tv", 0) == 1;
         visionUpdateCounter++;
         if (visionUpdateCounter >= VISION_UPDATE_RATE) {
             visionUpdateCounter = 0;
-
             if (cachedHasTarget) {
-                // Get full pose estimation (expensive operation)
                 cachedVisionResult = getRobotPoseFromAprilTagInternal();
             } else {
                 cachedVisionResult.valid = false;
@@ -201,86 +274,104 @@ public class VisionSubsystem extends SubsystemBase {
         }
     }
 
-    /**
-     * Internal method that doesn't use cache
-     */
     private VisionResult getRobotPoseFromAprilTagInternal() {
         VisionResult result = new VisionResult();
         result.valid = false;
 
-        if (!cachedHasTarget) {
+        // Debug: Check raw tv value
+        double tv = io.getDouble("tv", 0);
+        SmartDashboard.putBoolean("Vision/Debug/RawTV", tv == 1);
+
+        // BUG FIX: Check raw tv value, not cached value!
+        if (tv != 1) {
+            SmartDashboard.putString("Vision/Debug/Status", "No target (tv=" + tv + ")");
+            System.out.println("Vision: No target detected (tv=" + tv + ")");
             return result;
         }
 
-        // Determine which pose array to use based on alliance
-        boolean isRedAlliance = DriverStation.getAlliance()
-            .orElse(DriverStation.Alliance.Blue) == DriverStation.Alliance.Red;
+        System.out.println("Vision: Target detected! Reading pose data...");
 
-        String poseEntry = isRedAlliance ? "botpose_wpired" : "botpose_wpiblue";
-        double[] botPoseArray = limelightTable.getEntry(poseEntry).getDoubleArray(new double[0]);
+        String poseEntry = runtime.isRedAlliance() ? "botpose_wpired" : "botpose_wpiblue";
+        SmartDashboard.putString("Vision/Debug/PoseEntry", poseEntry);
+        System.out.println("Vision: Reading from " + poseEntry);
 
-        // botpose array: [x, y, z, roll, pitch, yaw, total_latency]
+        double[] botPoseArray = io.getDoubleArray(poseEntry, new double[0]);
+        SmartDashboard.putNumber("Vision/Debug/PoseArrayLength", botPoseArray.length);
+        System.out.println("Vision: botpose array length = " + botPoseArray.length);
+
         if (botPoseArray.length < 7) {
+            SmartDashboard.putString("Vision/Debug/Status", "Array too short: " + botPoseArray.length);
+            System.out.println("Vision: ERROR - Array too short! Expected 7, got " + botPoseArray.length);
             return result;
         }
 
-        // Extract pose data
         double x = botPoseArray[0];
         double y = botPoseArray[1];
         double yaw = botPoseArray[5];
-        double latency = botPoseArray[6] / 1000.0; // Convert ms to seconds
-        double timestamp = Timer.getFPGATimestamp() - latency;
+        double latency = botPoseArray[6] / 1000.0;
+        double timestamp = runtime.nowSec() - latency;
+
+        System.out.println(String.format("Vision: Got pose - X:%.2f Y:%.2f Yaw:%.1f Latency:%.3f",
+            x, y, yaw, latency));
 
         result.robotPose = new Pose2d(x, y, Rotation2d.fromDegrees(yaw));
         result.timestamp = timestamp;
-        result.tagId = (int) ((edu.wpi.first.networktables.NetworkTableEntry)tidEntry).getInteger(0);
+        result.tagId = (int) io.getInteger("tid", 0);
 
-        // Get ambiguity from targetpose_cameraspace array
-        // [x, y, z, roll, pitch, yaw, ambiguity]
-        double[] targetPoseArray = limelightTable.getEntry("targetpose_cameraspace")
-            .getDoubleArray(new double[0]);
+        double[] targetPoseArray = io.getDoubleArray("targetpose_cameraspace", new double[0]);
         result.ambiguity = (targetPoseArray.length >= 7) ? targetPoseArray[6] : 1.0;
+
+        // Debug values
+        SmartDashboard.putNumber("Vision/Debug/TagID", result.tagId);
+        SmartDashboard.putNumber("Vision/Debug/RobotX", x);
+        SmartDashboard.putNumber("Vision/Debug/RobotY", y);
+        SmartDashboard.putNumber("Vision/Debug/Ambiguity", result.ambiguity);
 
         // Validate result
         result.valid = (result.ambiguity < VisionConstants.AMBIGUITY_THRESHOLD) && (result.tagId > 0);
+
+        SmartDashboard.putBoolean("Vision/Debug/Valid", result.valid);
+        SmartDashboard.putString("Vision/Debug/Status", result.valid ? "OK" : "Invalid");
+
+        System.out.println("Vision: Result valid=" + result.valid + " (ambiguity=" + result.ambiguity + ", tagID=" + result.tagId + ")");
 
         return result;
     }
 
     @Override
     public void periodic() {
-        if (RobotBase.isReal()) {
-            double nowSec = Timer.getFPGATimestamp();
+        if (runtime.isReal()) {
+            if (!tuningInitialized) {
+                initializeTuningDashboard();
+            }
+
+            double nowSec = runtime.nowSec();
             if (lastConfigApplyTimestampSec < 0
                 || nowSec - lastConfigApplyTimestampSec >= VisionConstants.CONFIG_REAPPLY_INTERVAL_SEC) {
                 applyDesiredLimelightConfig();
             }
 
-            // Update cached vision data (including expensive pose estimation)
             updateCachedVisionData();
 
-            // Use cached values for SmartDashboard
-            SmartDashboard.putBoolean("Vision/HasTarget", cachedHasTarget);
+            // NetworkTables connectivity test
+            SmartDashboard.putBoolean("Vision/NT/Connected", io.getDouble("tv", -999) != -999);
 
-            // Only query these if we have a target (optimization)
+            SmartDashboard.putBoolean("Vision/HasTarget", cachedHasTarget);
             if (cachedHasTarget) {
-                SmartDashboard.putNumber("Vision/HorizontalOffset",
-                    ((edu.wpi.first.networktables.NetworkTableEntry)txEntry).getDouble(0));
-                SmartDashboard.putNumber("Vision/VerticalOffset",
-                    ((edu.wpi.first.networktables.NetworkTableEntry)tyEntry).getDouble(0));
-                SmartDashboard.putNumber("Vision/TargetArea",
-                    ((edu.wpi.first.networktables.NetworkTableEntry)taEntry).getDouble(0));
+                SmartDashboard.putNumber("Vision/HorizontalOffset", io.getDouble("tx", 0));
+                SmartDashboard.putNumber("Vision/VerticalOffset", io.getDouble("ty", 0));
+                SmartDashboard.putNumber("Vision/TargetArea", io.getDouble("ta", 0));
                 SmartDashboard.putNumber("Vision/DistanceToTarget", getDistanceToTarget());
             }
-
-            // FMAP status (these rarely change, update every cycle is fine)
             SmartDashboard.putNumber("Vision/FmapTagCount", getFmapTagCount());
             SmartDashboard.putString("Vision/FmapStatus", getFmapStatus());
             SmartDashboard.putNumber("Vision/Pipeline", getCurrentPipeline());
+            SmartDashboard.putNumber("Vision/CamMode", getCurrentCamMode());
+            SmartDashboard.putNumber("Vision/LEDMode", getCurrentLedMode());
+            SmartDashboard.putNumber("Vision/StreamMode", getCurrentStreamMode());
             SmartDashboard.putBoolean("Vision/ConfigOk", isLimelightConfigOk());
             SmartDashboard.putString("Vision/ConfigStatus", getLimelightConfigStatus());
 
-            // Pose estimation data from cache (updated every VISION_UPDATE_RATE cycles)
             SmartDashboard.putBoolean("Vision/PoseValid", cachedVisionResult.valid);
             if (cachedVisionResult.valid) {
                 SmartDashboard.putNumber("Vision/RobotX", cachedVisionResult.robotPose.getX());
@@ -290,7 +381,6 @@ public class VisionSubsystem extends SubsystemBase {
                 SmartDashboard.putNumber("Vision/Ambiguity", cachedVisionResult.ambiguity);
             }
         } else {
-            // Simulation - mock vision data
             SmartDashboard.putBoolean("Vision/HasTarget", true);
             SmartDashboard.putNumber("Vision/HorizontalOffset", 5.0);
             SmartDashboard.putNumber("Vision/DistanceToTarget", 3.0);
@@ -303,10 +393,8 @@ public class VisionSubsystem extends SubsystemBase {
         }
     }
 
-    /**
-     * Public method that returns current vision result (from cache for performance)
-     */
     public VisionResult getRobotPoseFromAprilTag() {
-        return cachedVisionResult;
+        // For debugging: Always read fresh data, don't use cache
+        return getRobotPoseFromAprilTagInternal();
     }
 }

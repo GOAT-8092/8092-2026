@@ -137,6 +137,9 @@ public class DriveSubsystem extends SubsystemBase {
     FieldConstants.setupField(field);
 
     mecanumDrive = new MecanumDrive(frontLeftMotor, rearLeftMotor, frontRightMotor, rearRightMotor);
+    // Keep MotorSafety enabled, but allow more headroom for heavier periodic cycles.
+    mecanumDrive.setExpiration(0.5);
+    mecanumDrive.setSafetyEnabled(true);
 
     // Store vision subsystem reference
     this.visionSubsystem = visionSubsystem;
@@ -209,18 +212,22 @@ public class DriveSubsystem extends SubsystemBase {
   // Test helpers: set individual motors directly for bench testing.
   public void testSetFrontLeft(double speed) {
     if (frontLeftMotor != null) frontLeftMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void testSetFrontRight(double speed) {
     if (frontRightMotor != null) frontRightMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void testSetRearLeft(double speed) {
     if (rearLeftMotor != null) rearLeftMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void testSetRearRight(double speed) {
     if (rearRightMotor != null) rearRightMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void stopAllMotors() {
@@ -228,6 +235,7 @@ public class DriveSubsystem extends SubsystemBase {
     if (frontRightMotor != null) frontRightMotor.set(0);
     if (rearLeftMotor != null) rearLeftMotor.set(0);
     if (rearRightMotor != null) rearRightMotor.set(0);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void requestNavXYawValidation() {
@@ -265,7 +273,7 @@ public class DriveSubsystem extends SubsystemBase {
     return System.currentTimeMillis();
   }
 
-  private static double wrapDeltaDegrees(double startDeg, double endDeg) {
+  static double wrapDeltaDegrees(double startDeg, double endDeg) {
     return MathUtil.inputModulus(endDeg - startDeg, -180.0, 180.0);
   }
 
@@ -466,6 +474,11 @@ public class DriveSubsystem extends SubsystemBase {
 
     @Override
     public void periodic() {
+        // Feed early so MotorSafety doesn't trip if later periodic work runs long.
+        if (mecanumDrive != null) {
+          mecanumDrive.feed();
+        }
+
         handleNavXValidationTrigger();
         runNavXValidationStateMachine();
 
@@ -574,11 +587,17 @@ public class DriveSubsystem extends SubsystemBase {
   }
 
   public double getDistance(RelativeEncoder encoder) {
-    return encoder.getPosition() / DriveConstants.GEARBOX_RATIO * DriveConstants.WHEEL_CIRCUMFERENCE;
+    return DriveMath.encoderPositionToMeters(
+        encoder.getPosition(),
+        DriveConstants.GEARBOX_RATIO,
+        DriveConstants.WHEEL_CIRCUMFERENCE);
   }
 
   public double getVelocity(RelativeEncoder encoder) {
-    return encoder.getVelocity() / DriveConstants.GEARBOX_RATIO * DriveConstants.WHEEL_CIRCUMFERENCE / 60.0;
+    return DriveMath.encoderVelocityRpmToMetersPerSecond(
+        encoder.getVelocity(),
+        DriveConstants.GEARBOX_RATIO,
+        DriveConstants.WHEEL_CIRCUMFERENCE);
   }
 
   public Pose2d getPose() {
@@ -611,18 +630,22 @@ public class DriveSubsystem extends SubsystemBase {
   // Run individual motors forward for testing
   public void runFrontLeftMotor(double speed) {
     frontLeftMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void runFrontRightMotor(double speed) {
     frontRightMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void runRearLeftMotor(double speed) {
     rearLeftMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   public void runRearRightMotor(double speed) {
     rearRightMotor.set(speed);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
   // Run all motors forward for testing
@@ -631,6 +654,7 @@ public class DriveSubsystem extends SubsystemBase {
     frontRightMotor.set(speed/16);
     rearLeftMotor.set(speed/16);
     rearRightMotor.set(speed/16);
+    if (mecanumDrive != null) mecanumDrive.feed();
   }
 
 }

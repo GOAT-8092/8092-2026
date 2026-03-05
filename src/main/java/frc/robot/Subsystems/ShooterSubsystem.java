@@ -13,6 +13,7 @@ public class ShooterSubsystem extends SubsystemBase {
     private SparkMax leftShooterMotor;
     private SparkMax rightShooterMotor;
     private SparkMax topShooterMotor;
+    private double lastCommandedSpeed = 0.0;
 
     public ShooterSubsystem() {
         if (MotorConstants.ENABLE_NON_DRIVE_MOTORS) {
@@ -39,14 +40,20 @@ public class ShooterSubsystem extends SubsystemBase {
     }
 
     public void shoot() {
+        lastCommandedSpeed = ModuleConstants.SHOOTER_SPEED;
         if (leftShooterMotor != null) leftShooterMotor.set(ModuleConstants.SHOOTER_SPEED);
         if (rightShooterMotor != null) rightShooterMotor.set(ModuleConstants.SHOOTER_SPEED);
         if (topShooterMotor != null) topShooterMotor.set(ModuleConstants.SHOOTER_SPEED);
     }
 
     public void stop() {
+        lastCommandedSpeed = 0.0;
         if (leftShooterMotor != null) leftShooterMotor.set(0);
         if (rightShooterMotor != null) rightShooterMotor.set(0);
         if (topShooterMotor != null) topShooterMotor.set(0);
+    }
+
+    public double getLastCommandedSpeed() {
+        return lastCommandedSpeed;
     }
 }

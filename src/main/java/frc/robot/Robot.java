@@ -7,6 +7,9 @@ package frc.robot;
 import edu.wpi.first.wpilibj.TimedRobot;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+import frc.robot.util.Elastic;
+import frc.robot.util.Elastic.Notification;
+import frc.robot.util.Elastic.NotificationLevel;
 
 public class Robot extends TimedRobot {
   private Command m_autonomousCommand;
@@ -18,7 +21,21 @@ public class Robot extends TimedRobot {
   }
 
   @Override
+  public void robotInit() {
+    Elastic.selectTab("Auto");
+    Elastic.sendNotification(
+        new Notification(
+            NotificationLevel.INFO,
+            "Robot Startup",
+            "ElasticLib is configured and publishing from Robot code."));
+  }
+
+  @Override
   public void robotPeriodic() {
+    // Update container diagnostics (button polling, controller status)
+    m_robotContainer.periodic();
+
+    // Run command scheduler
     CommandScheduler.getInstance().run();
   }
 

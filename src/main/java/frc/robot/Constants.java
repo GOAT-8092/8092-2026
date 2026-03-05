@@ -117,6 +117,7 @@ public final class Constants {
         public static final int DESIRED_PIPELINE = 0;
         public static final int DESIRED_CAM_MODE = 0; // 0 = Vision processor
         public static final int DESIRED_LED_MODE = 0; // 0 = Pipeline control
+        public static final int DESIRED_STREAM_MODE = 0; // 0 = Standard layout
         public static final double CONFIG_REAPPLY_INTERVAL_SEC = 1.0;
 
         // AprilTag FMAP source
