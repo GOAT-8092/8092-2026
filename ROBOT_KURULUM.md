@@ -124,7 +124,7 @@ NavX jiroskop yalnızca yaw doğrulama testi için kullanılır. Sürüş komutl
 
 | Cihaz     | Model                  | IP           |
 |-----------|------------------------|--------------|
-| Radyo     | Vivid-Hosting VH-109   | 10.80.92.11  |
+| Radyo     | Vivid-Hosting VH-109   | 10.80.92.1  |
 | roboRIO   | NI roboRIO 1.0         | 10.80.92.2   |
 | Limelight | Limelight 3            | 10.80.92.200 |
 

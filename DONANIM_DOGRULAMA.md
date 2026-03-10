@@ -153,7 +153,7 @@ SmartDashboard'da `Vision/HasTarget` degerini kontrol edin. Hedef gorunuyor olma
 | Cihaz      | IP           | Model                  |
 |------------|--------------|------------------------|
 | roboRIO    | 10.80.92.2   | NI roboRIO 1.0         |
-| Radyo      | 10.80.92.11  | Vivid-Hosting VH-109   |
+| Radyo      | 10.80.92.1  | Vivid-Hosting VH-109   |
 | Limelight  | 10.80.92.200 | Limelight 3            |
 
 Takim numarasi: 8092

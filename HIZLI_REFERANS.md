@@ -91,7 +91,7 @@ Buton 8 (R2) - Surekli Takip:
 | Cihaz | Adres |
 |-------|-------|
 | roboRIO | 10.80.92.2 |
-| Radyo | 10.80.92.11 |
+| Radyo | 10.80.92.1 |
 | Limelight | 10.80.92.200 |
 | Limelight Web | http://10.80.92.200:5801 |
 
