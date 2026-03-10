@@ -9,7 +9,7 @@ Bu, 2026 sezonu için bir FRC (FIRST Robotics Competition) robot kod projesidir.
 ### Temel Donanım
 
 - **Sürücü Sistemi**: CAN veriyolu üzerinden REV Spark MAX kontrolörleri tarafından kontrol edilen NEO fırçasız motorlarla 4 tekerlekli mekanum sürüş
-- **Jiroskop**: Alan odaklı sürüş için NavX (Studica)
+- **Jiroskop**: NavX (Studica) - yalnızca yaw doğrulama testi için kullanılır, sürüşte kullanılmaz
 - **Görüntüleme**: AprilTag hedef takibi için Limelight 3
 - **Ek alt sistemler**: Intake (top toplama), Shooter (atıcı), Turret (taret) (motorlar CAN ID 5-9'da)
 
@@ -64,14 +64,14 @@ frc.robot/
 
 Kod WPILib'in komut tabanlı desenini takip eder:
 
-- **DriveSubsystem**: Odometri, alan odaklı kontrol ve PathPlanner entegrasyonlu mekanum sürüş
+- **DriveSubsystem**: Odometri, robot odaklı kontrol ve PathPlanner entegrasyonlu mekanum sürüş
 - **VisionSubsystem**: Hedef algılama için Limelight'a NetworkTables arayüzü
 - **IntakeSubsystem**, **ShooterSubsystem**, **TurretSubsystem**: Oyun parçası manipülasyonu
 
 ### Sürüş Kontrol Notları
 
 - **Kontrolcü eşleşmesi**: Driver PS4 kullanır (port 0), Operator Joystick kullanır (port 1)
-- **Eksenler**: `DRIVER_Y_AXIS=1` (Left Stick Y - ileri/geri), `DRIVER_X_AXIS=0` (Left Stick X - sağ/sol), `DRIVER_Z_AXIS=2` (Right Stick X)
+- **Eksenler**: `DRIVER_Y_AXIS=0` (Left Stick Y - ileri/geri), `DRIVER_X_AXIS=1` (Left Stick X - strafe/sağ/sol), `DRIVER_Z_AXIS=2` (Right Stick X - döndürme, kodda ters çevrilmiş)
 - **İleri yönü**: Joystick yukarı itildiğinde robot ileri gider
 - **Robot odaklı sürüş**: Alan odaklı sürüş YOK - robot kendi yönüne göre hareket eder (NavX jiroskop kullanılmaz)
 - **Önemli Karar**: Bu robot sadece **ROBOT ORIENTED DRIVE** kullanır - robot kendi yönüne göre hareket eder, sahadaki yöne göre değil
@@ -90,6 +90,22 @@ Tüm ayarlanabilir parametreler `Constants.java` dosyasında iç içe sınıflar
 
 Intake/shooter/turret motor kontrolörlerini etkinleştirmek için `MotorConstants.ENABLE_NON_DRIVE_MOTORS = true` yapın. `false` olduğunda, bu alt sistemler motor çağrılarını no-op yapar (test için veya CAN çakışmalarını önlemek için kullanışlıdır).
 
+**Mevcut durum:** `false` — IntakeSubsystem, ShooterSubsystem ve TurretSubsystem ayrıca `RobotContainer`'da henüz örneklenmemiştir ve hiçbir butona bağlı değildir.
+
+### Buton Atamaları (RobotContainer.java)
+
+| Buton | PS4 Tuşu | Komut |
+|-------|----------|-------|
+| 1 | Square | Ön Sol motor test (CAN ID 2, %30) |
+| 2 | Cross | Arka Sol motor test (CAN ID 3, %30) |
+| 3 | Circle | Arka Sağ motor test (CAN ID 1, %30) |
+| 4 | Triangle | Ön Sağ motor test (CAN ID 4, %30) |
+| 5 | L1 | Vision pose reset (AprilTag ile odometry sıfırla) |
+| 6 | R1 | AlignToAprilTagCommand - Tag 1'e hizala, 1.0m (basılı tut) |
+| 7 | L2 | RotateToAprilTag360Command - Tag 1'e 360° dön (bir kez bas) |
+| 8 | R2 | TrackAprilTagCommand - Tag 1 sürekli takip, 1.0m (basılı tut) |
+| 9-12 | — | Atanmamış |
+
 ## NavX Yaw Doğrulama Özelliği
 
 `DriveSubsystem`, disabled modunda çalışan yerleşik bir NavX yaw doğrulama testi içerir. Robotu saat yönünde ve saat yönünün tersine döndürerek jiroskopun çalıştığını doğrular.
@@ -99,7 +115,7 @@ Intake/shooter/turret motor kontrolörlerini etkinleştirmek için `MotorConstan
 2. Test otomatik olarak durum makinesi üzerinden çalışır
 3. Sonuçlar `NavXTest/Status`, `NavXTest/ErrorCode` ve dashboard değerlerinde görünür
 
-**Hata kodları:** NAVX_E001'den NAVX_E007'ye kadar (açıklamalar için ROBOT_SETUP.md'ye bakın)
+**Hata kodları:** NAVX_E001'den NAVX_E007'ye kadar (açıklamalar için ROBOT_KURULUM.md'ye bakın)
 
 ## PathPlanner Entegrasyonu
 
@@ -124,7 +140,13 @@ DriveSubsystem, PathPlanner path takibi için holonomic sürüş kontrolörü il
 
 ## Referans Dokümantasyon
 
-- ROBOT_SETUP.md doğrulanmış motor eşleşmeleri ve kontrol ayar değerleriyle (Türkçe) ayrıntılı donanım kurulum notları içerir
+- `ROBOT_KURULUM.md` — doğrulanmış motor eşleşmeleri ve kontrol ayar değerleriyle ayrıntılı donanım kurulum notları
+- `BUTON_REFERANSI.md` — tüm buton atamaları ve eksen eşleşmeleri
+- `ROBOT_KULLANICI_REHBERI.md` — sürücü/operatör kullanım kılavuzu
+- `HIZLI_REFERANS.md` — saha kenarı hızlı başvuru kartı
+- `DONANIM_DOGRULAMA.md` — donanım doğrulama prosedürü
+- `APRILTAG_TEST_PLANI.md` — AprilTag test adımları
+- `APRILTAG_HIZALAMA_TEST_REHBERI.md` — hizalama ve PathPlanner test rehberi
 - WPILib dokümantasyonu: https://docs.wpilib.org/
 - REVLib (Spark MAX) dokümantasyonu: https://docs.revrobotics.com/
 - PathPlanner dokümantasyonu: https://pathplanner.dev/
