@@ -17,6 +17,11 @@ class MechanismSubsystemTest {
 
         intake.outtake();
         assertEquals(-ModulSabitleri.ALIM_HIZI, intake.getLastCommandedSpeed(), 1e-9);
+
+        intake.depodanAticiyaYukariTasimaBaslat();
+        assertEquals(ModulSabitleri.DEPO_ATICI_YUKARI_TASIYICI_HIZI, intake.getSonTasiyiciHizi(), 1e-9);
+        intake.depodanAticiyaYukariTasimaDurdur();
+        assertEquals(0.0, intake.getSonTasiyiciHizi(), 1e-9);
     }
 
     @Test

@@ -26,13 +26,16 @@ class IntakeAndShootCommandTest {
     @Test
     @Tag("fast")
     void shootCommandInitializesAndStopsShooterOutput() {
-        ShooterSubsystem subsystem = new ShooterSubsystem();
-        ShootCommand command = new ShootCommand(subsystem, 3.0);
+        ShooterSubsystem shooterSubsystem = new ShooterSubsystem();
+        IntakeSubsystem intakeSubsystem = new IntakeSubsystem();
+        ShootCommand command = new ShootCommand(shooterSubsystem, intakeSubsystem, 3.0);
 
         command.initialize();
-        assertEquals(ModulSabitleri.ATICI_HIZI, subsystem.getLastCommandedSpeed(), 1e-9);
+        assertEquals(ModulSabitleri.ATICI_HIZI, shooterSubsystem.getLastCommandedSpeed(), 1e-9);
+        assertEquals(ModulSabitleri.DEPO_ATICI_YUKARI_TASIYICI_HIZI, intakeSubsystem.getSonTasiyiciHizi(), 1e-9);
 
         command.end(false);
-        assertEquals(0.0, subsystem.getLastCommandedSpeed(), 1e-9);
+        assertEquals(0.0, shooterSubsystem.getLastCommandedSpeed(), 1e-9);
+        assertEquals(0.0, intakeSubsystem.getSonTasiyiciHizi(), 1e-9);
     }
 }

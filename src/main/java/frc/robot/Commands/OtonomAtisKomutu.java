@@ -13,8 +13,8 @@ public class OtonomAtisKomutu extends SequentialCommandGroup {
         addCommands(
             // Align turret to target
             new HedefeHizalamaKomutu(SurusAltSistemi, turretSubsystem, GorusAltSistemi),
-            // Shoot
-            new ShootCommand(shooterSubsystem, 3.0)
+            // Shoot + depodan aticiya yukari tasima
+            new ShootCommand(shooterSubsystem, intakeSubsystem, 3.0)
         );
     }
 }

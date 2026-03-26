@@ -30,9 +30,12 @@ public final class Sabitler {
 
         public static final boolean SURUS_DISI_MOTORLARI_ETKIN = false;
 
-        // Alim motoru
+        // Alim ve tasiyici CIM motorlari (PWM)
         public static final int ALIM_MOTOR_ID = 5;
         public static final boolean ALIM_MOTOR_TERS = false;
+        public static final int ALIM_CIM_PWM_KANALI = 8;
+        public static final int DEPO_ATICI_YUKARI_TASIYICI_CIM_PWM_KANALI = 9;
+        public static final boolean DEPO_ATICI_YUKARI_TASIYICI_TERS = false;
 
         // Atici motorlari
         public static final int SOL_ATICI_MOTOR_ID = 6;
@@ -107,6 +110,7 @@ public final class Sabitler {
         public static final int TARET_MOTOR_ID = 7;
 
         public static final double ALIM_HIZI = 0.5;
+        public static final double DEPO_ATICI_YUKARI_TASIYICI_HIZI = 0.5;
         public static final double ATICI_HIZI = 0.8;
         public static final double TARET_HIZI = 0.3;
     }
@@ -152,4 +156,5 @@ public final class Sabitler {
         public static final double MAKS_MUTLAK_YAW_SICRAMA_DERECE = 180.0;
         public static final double DONUS_ASAMA_ZAMAN_ASIMI_SN = 5.0;
     }
+
 }

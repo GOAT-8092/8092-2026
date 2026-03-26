@@ -1,127 +1,48 @@
 # CLAUDE.md
 
-Bu dosya, bu depodaki kodlarla çalışırken Claude Code (claude.ai/code) için rehberlik sağlar.
+Bu dosya, bu depoda calisirken gelistirici yardimcisina hizli teknik baglam verir.
 
-## Proje Genel Bakış
+## Proje Ozeti
 
-Bu, 2026 sezonu için bir FRC (FIRST Robotics Competition) robot kod projesidir. Komut tabanlı programlama modelini kullanan Java tabanlı bir WPILib projesidir.
+- Dil: Java (WPILib command-based)
+- Robot: mecanum surus + AprilTag vision
+- Ana siniflar:
+  - Robot.java
+  - RobotKapsayici.java
+  - Sabitler.java
 
-### Temel Donanım
+## Guncel Donanim
 
-- **Sürücü Sistemi**: CAN veriyolu üzerinden REV Spark MAX kontrolörleri tarafından kontrol edilen NEO fırçasız motorlarla 4 tekerlekli mekanum sürüş
-- **Jiroskop**: Alan odaklı sürüş için NavX (Studica)
-- **Görüntüleme**: AprilTag hedef takibi için Limelight 3
-- **Ek alt sistemler**: Intake (top toplama), Shooter (atıcı), Turret (taret) (motorlar CAN ID 5-9'da)
+### Surus
+- 4x NEO + Spark Max (CAN)
+- CAN: 1 (on sol), 2 (on sag), 3 (arka sag), 4 (arka sol)
 
-### CAN ID Eşleşmesi
+### Mekanizma
+- Intake: 1x CIM (PWM)
+- Depodan aticiya yukari tasima: 1x CIM (PWM)
+- Shooter: NEO + Spark Max
+- Turret: NEO + Spark Max
 
-Fiziksel CAN kablo bağlantıları bu motor ID'leri ile eşleşir (saha testiyle doğrulanmış):
-- `CAN ID 1` → Ön Sol NEO (ters: true)
-- `CAN ID 3` → Ön Sağ NEO (ters: false)
-- `CAN ID 4` → Arka Sol NEO (ters: true)
-- `CAN ID 2` → Arka Sağ NEO (ters: false)
+### Sensor
+- NavX (MXP SPI)
+- Limelight 3
 
-## Derleme ve Dağıtım Komutları
+## Derleme ve Deploy
 
 ```bash
-# Projeyi derle
 ./gradlew build
-
-# Robota dağıt (bağlı roboRIO gerekir)
-./gradlew deploy
-
-# Masaüstü simülasyonunu çalıştır
-./gradlew simulate
-
-# Testleri çalıştır
 ./gradlew test
-
-# Belirli bir test sınıfını çalıştır
-./gradlew test --tests <SınıfAdı>
-
-# Derleme yapıtlarını temizle
-./gradlew clean
+./gradlew deploy
 ```
 
-## Mimari
+## Onemli Notlar
 
-### Paket Yapısı
+- Surus disi alt sistemleri fiziksel olarak etkinlestirmek icin:
+  - `Sabitler.MotorSabitleri.SURUS_DISI_MOTORLARI_ETKIN = true`
+- L1/R1 su anda CAN ID 3 motor testine atanmistir (%10 geri/ileri).
 
-```
-frc.robot/
-├── Main.java              # Giriş noktası
-├── Robot.java             # TimedRobot yaşam döngüsü yönetimi
-├── RobotContainer.java    # Alt sistemler, komutlar ve tuş bağları
-├── Constants.java         # Tüm yapılandırma sabitleri
-├── FieldConstants.java    # 2026 saha boyutları ve AprilTag pozisyonları
-├── Commands/              # Komut sınıfları
-└── Subsystems/            # Alt sistem implementasyonları
-```
+## Referans Dokumanlar
 
-### Alt Sistem Mimaris
-
-Kod WPILib'in komut tabanlı desenini takip eder:
-
-- **DriveSubsystem**: Odometri, alan odaklı kontrol ve PathPlanner entegrasyonlu mekanum sürüş
-- **VisionSubsystem**: Hedef algılama için Limelight'a NetworkTables arayüzü
-- **IntakeSubsystem**, **ShooterSubsystem**, **TurretSubsystem**: Oyun parçası manipülasyonu
-
-### Sürüş Kontrol Notları
-
-- **Kontrolcü eşleşmesi**: Driver PS4 kullanır (port 0), Operator Joystick kullanır (port 1)
-- **Eksenler**: `DRIVER_Y_AXIS=0`, `DRIVER_X_AXIS=1`, `DRIVER_Z_AXIS=2`
-- **İleri yönü**: Y eksen negatif (joystick değerleri geri çekildiğinde artar)
-- **Alan odaklı sürüş**: Her zaman açık - NavX jiroskop başlığını kullanır
-
-### Sabitler Organizasyonu
-
-Tüm ayarlanabilir parametreler `Constants.java` dosyasında iç içe sınıflar halinde:
-- `MotorConstants`: CAN ID'ler ve motor ters çevirme
-- `DriveConstants`: Fiziksel boyutlar, kinematik, maksimum hızlar
-- `DriveControlConstants`: Deadband, slew oranları, giriş ölçekleme
-- `ModuleConstants`: Intake/turret/shooter hızları, vizyon geometrisi
-- `OIConstants`: Kontrolcü port/tuş/eksen eşleşmeleri
-- `NavXTestConstants`: Yaw doğrulama test parametreleri
-
-### Önemli: ENABLE_NON_DRIVE_MOTORS Bayrağı
-
-Intake/shooter/turret motor kontrolörlerini etkinleştirmek için `MotorConstants.ENABLE_NON_DRIVE_MOTORS = true` yapın. `false` olduğunda, bu alt sistemler motor çağrılarını no-op yapar (test için veya CAN çakışmalarını önlemek için kullanışlıdır).
-
-## NavX Yaw Doğrulama Özelliği
-
-`DriveSubsystem`, disabled modunda çalışan yerleşik bir NavX yaw doğrulama testi içerir. Robotu saat yönünde ve saat yönünün tersine döndürerek jiroskopun çalıştığını doğrular.
-
-**Kullanım:**
-1. SmartDashboard'da `NavXTest/Run = true` yapın (sadece Disabled durumundayken çalışır)
-2. Test otomatik olarak durum makinesi üzerinden çalışır
-3. Sonuçlar `NavXTest/Status`, `NavXTest/ErrorCode` ve dashboard değerlerinde görünür
-
-**Hata kodları:** NAVX_E001'den NAVX_E007'ye kadar (açıklamalar için ROBOT_SETUP.md'ye bakın)
-
-## PathPlanner Entegrasyonu
-
-Otonom yollar PathPlanner lib üzerinden yapılandırılır. Auto dosyaları `src/main/deploy/pathplanner/` içinde bulunur ve SmartDashboard "Auto Chooser" üzerinden seçilebilir.
-
-DriveSubsystem, PathPlanner path takibi için holonomic sürüş kontrolörü ile `AutoBuilder.configure()` implemente eder.
-
-## Test ve Simülasyon
-
-- Birim testleri JUnit 5 kullanır (`test/` dizinine bakın)
-- Masaüstü simülasyonu WPILib GUI üzerinden desteklenir
-- Kod, gerçek donanım vs simüle edilmiş değerler koşullu olarak kullanmak için `RobotBase.isReal()` kontrol eder
-- SmartDashboard'daki motor test toggle'ları disabled durumdayken bireysel motor testine izin verir
-
-## Vendor Bağımlılıkları
-
-`vendordeps/` içinde bulunur:
-- `REVLib.json`: Spark MAX motor kontrolcü desteği
-- `PathplannerLib-2026.1.2.json`: Otonom path takibi
-- `Studica.json`: NavX jiroskop desteği
-- `WPILibNewCommands.json`: Komut tabanlı framework
-
-## Referans Dokümantasyon
-
-- ROBOT_SETUP.md doğrulanmış motor eşleşmeleri ve kontrol ayar değerleriyle (Türkçe) ayrıntılı donanım kurulum notları içerir
-- WPILib dokümantasyonu: https://docs.wpilib.org/
-- REVLib (Spark MAX) dokümantasyonu: https://docs.revrobotics.com/
-- PathPlanner dokümantasyonu: https://pathplanner.dev/
+- ROBOT_USER_GUIDE.md: kullanim, butonlar, test akisi (birlestirilmis)
+- ROBOT_SETUP.md: donanim ve baglanti haritasi
+- HARDWARE_VALIDATION.md: dogrulama artifact akisi

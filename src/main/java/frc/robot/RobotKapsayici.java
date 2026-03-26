@@ -220,34 +220,29 @@ public class RobotKapsayici {
             SmartDashboard.putString(surucuIstasyonuAnahtari("SonDugme"), "Daire (3) - PWM1 Victor SPX");
         }));
 
-    // L1 dugmesi (5): gorusten AprilTag ile poz sifirlar.
+    // L1 dugmesi (5): CAN ID 3 motorunu test icin %10 geri calistirir.
     new JoystickButton(surucuKontrolcusu, 5)
-        .onTrue(new RunCommand(() -> {
+        .onTrue(new InstantCommand(() -> {
             System.out.println("===========================================");
             System.out.println("DUGME 5 (L1) BASILDI");
-            System.out.println("Eylem: AprilTag gorusunden robot pozu sifirlaniyor");
+            System.out.println("Eylem: CAN ID 3 motor %10 GERI");
             System.out.println("===========================================");
-            SmartDashboard.putString(surucuIstasyonuAnahtari("SonDugme"), "L1 (5) - Poz Sifirla");
-            surusAltSistemi.gorusIlePozuSifirla();
-        }, surusAltSistemi));
+            SmartDashboard.putString(surucuIstasyonuAnahtari("SonDugme"), "L1 (5) - CAN3 %10 Geri");
+        }))
+        .whileTrue(new RunCommand(() -> surusAltSistemi.arkaSagMotoruCalistir(-0.10), surusAltSistemi))
+        .onFalse(new InstantCommand(() -> surusAltSistemi.arkaSagMotoruCalistir(0.0), surusAltSistemi));
 
-    // R1 dugmesi (6): AprilTag hedefiyle hizalar.
-    // Robotu AprilTag 1'e yonelecek sekilde surer.
+    // R1 dugmesi (6): CAN ID 3 motorunu test icin %10 ileri calistirir.
     new JoystickButton(surucuKontrolcusu, 6)
-        .onTrue(new RunCommand(() -> {
+        .onTrue(new InstantCommand(() -> {
             System.out.println("===========================================");
             System.out.println("DUGME 6 (R1) BASILDI");
-            System.out.println("Eylem: AprilTag ID 1 hizalamasi baslatiliyor");
-            System.out.println("Hedef: Tagin 1 metre onunde dur");
+            System.out.println("Eylem: CAN ID 3 motor %10 ILERI");
             System.out.println("===========================================");
-            SmartDashboard.putString(surucuIstasyonuAnahtari("SonDugme"), "R1 (6) - AprilTag Hizala");
-        }, surusAltSistemi))
-        .whileTrue(new AprilTagaHizalamaKomutu(
-            surusAltSistemi,
-            gorusAltSistemi,
-            1,      // Hedef AprilTag kimligi
-            1.0     // Tagin 1 metre onunde durur
-        ));
+            SmartDashboard.putString(surucuIstasyonuAnahtari("SonDugme"), "R1 (6) - CAN3 %10 Ileri");
+        }))
+        .whileTrue(new RunCommand(() -> surusAltSistemi.arkaSagMotoruCalistir(0.10), surusAltSistemi))
+        .onFalse(new InstantCommand(() -> surusAltSistemi.arkaSagMotoruCalistir(0.0), surusAltSistemi));
 
     // R2 dugmesi (8): AprilTag'i surekli takip eder.
     // Basili tuttukca takip eder, birakinca durur.
