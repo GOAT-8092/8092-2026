@@ -40,7 +40,7 @@ public final class Sabitler {
         public static final int ATICI_MOTOR_ID = 5;
         public static final boolean ATICI_MOTOR_TERS = false;
 
-        // Taret motoru
+        // Taret motoru (tek Spark Max)
         public static final int TARET_MOTOR_ID = 6;
         public static final boolean TARET_MOTOR_TERS = false;
 
