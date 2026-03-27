@@ -103,10 +103,10 @@ public final class Sabitler {
     }
 
     public static class ModulSabitleri {
-        public static final double ALIM_HIZI = 0.5;
-        public static final double DEPO_ATICI_YUKARI_TASIYICI_HIZI = 0.5;
+        public static final double ALIM_HIZI = 0.8;
+        public static final double DEPO_ATICI_YUKARI_TASIYICI_HIZI = 0.75;
         public static final double ATICI_HIZI = 0.8;
-        public static final double TARET_HIZI = 0.25;
+        public static final double TARET_HIZI = 0.04;
     }
 
     public static class GorusSabitleri {
@@ -133,6 +133,7 @@ public final class Sabitler {
         // Gorus olcum guvenilirligi
         public static final double GORUS_OLCUM_STD_SAPMA_SN = 0.5;
         public static final double BELIRSIZLIK_ESIGI = 0.2;
+        
 
         // Poz guncelleme hizi
         public static final double POZ_GUNCELLEME_ARALIGI_SN = 0.05; // 20Hz
