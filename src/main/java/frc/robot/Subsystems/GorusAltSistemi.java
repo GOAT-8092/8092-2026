@@ -383,7 +383,6 @@ public class GorusAltSistemi extends SubsystemBase {
     }
 
     public VisionResult aprilTagdanRobotPozuAl() {
-        // For debugging: Always read fresh data, don't use cache
-        return getRobotPoseFromAprilTagInternal();
+        return cachedVisionResult;
     }
 }
