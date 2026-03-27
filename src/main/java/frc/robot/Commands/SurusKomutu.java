@@ -17,26 +17,26 @@ import frc.robot.Subsystems.SurusAltSistemi;
 public class SurusKomutu extends Command {
   @FunctionalInterface
   public interface SurusCikisi {
-    void sur(double yHizi, double xHizi, double zDonus);
+    void sur(double xHizi, double yHizi, double zDonus);
   }
 
   private final SurusCikisi surusCikisi;
-  private final DoubleSupplier yHizi;
   private final DoubleSupplier xHizi;
+  private final DoubleSupplier yHizi;
   private final DoubleSupplier zDonusu;
-  private final SlewRateLimiter ySinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.OTELEME_SINIRLAMA_ORANI);
   private final SlewRateLimiter xSinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.OTELEME_SINIRLAMA_ORANI);
+  private final SlewRateLimiter ySinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.OTELEME_SINIRLAMA_ORANI);
   private final SlewRateLimiter zSinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.DONUS_SINIRLAMA_ORANI);
 
 
-  public SurusKomutu(DoubleSupplier yHizi, DoubleSupplier xHizi, DoubleSupplier zDonusu, SurusAltSistemi surusAltSistemi) {
-    this(yHizi, xHizi, zDonusu, surusAltSistemi::drive, surusAltSistemi);
+  public SurusKomutu(DoubleSupplier xHizi, DoubleSupplier yHizi, DoubleSupplier zDonusu, SurusAltSistemi surusAltSistemi) {
+    this(xHizi, yHizi, zDonusu, surusAltSistemi::drive, surusAltSistemi);
   }
 
-  SurusKomutu(DoubleSupplier yHizi, DoubleSupplier xHizi, DoubleSupplier zDonusu, SurusCikisi surusCikisi, Subsystem... gereksinimler) {
+  SurusKomutu(DoubleSupplier xHizi, DoubleSupplier yHizi, DoubleSupplier zDonusu, SurusCikisi surusCikisi, Subsystem... gereksinimler) {
     this.surusCikisi = surusCikisi;
-    this.yHizi = yHizi;
     this.xHizi = xHizi;
+    this.yHizi = yHizi;
     this.zDonusu = zDonusu;
 
     if (gereksinimler != null && gereksinimler.length > 0) {
@@ -51,16 +51,16 @@ public class SurusKomutu extends Command {
   // Called every time the scheduler runs while the command is scheduled.
   @Override
   public void execute() {
+    double x = eksenSekillendir(xHizi.getAsDouble(), SurusKontrolSabitleri.YANLAMASINA_OLCEK);
     // Bu kurulumda ileri yon icin Y ekseni ters cevriliyor.
     double y = eksenSekillendir(-yHizi.getAsDouble(), SurusKontrolSabitleri.OTELEME_OLCEGI);
-    double x = eksenSekillendir(xHizi.getAsDouble(), SurusKontrolSabitleri.YANLAMASINA_OLCEK);
     double z = eksenSekillendir(zDonusu.getAsDouble(), SurusKontrolSabitleri.DONUS_OLCEGI);
 
-    double yKomutu = ySinirlayici.calculate(y);
     double xKomutu = xSinirlayici.calculate(x);
+    double yKomutu = ySinirlayici.calculate(y);
     double zKomutu = zSinirlayici.calculate(z);
 
-    surusCikisi.sur(yKomutu, xKomutu, zKomutu);
+    surusCikisi.sur(xKomutu, yKomutu, zKomutu);
   }
 
   // Called once the command ends or is interrupted.

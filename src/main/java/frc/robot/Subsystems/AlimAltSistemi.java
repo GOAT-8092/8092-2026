@@ -44,6 +44,13 @@ public class AlimAltSistemi extends SubsystemBase {
         }
     }
 
+    public void depodanAticiyaYukariTasimaTersBaslat() {
+        sonTasiyiciHizi = -ModulSabitleri.DEPO_ATICI_YUKARI_TASIYICI_HIZI;
+        if (yukariTasiyiciCimMotoru != null) {
+            yukariTasiyiciCimMotoru.set(-ModulSabitleri.DEPO_ATICI_YUKARI_TASIYICI_HIZI);
+        }
+    }
+
     public void depodanAticiyaYukariTasimaDurdur() {
         sonTasiyiciHizi = 0.0;
         if (yukariTasiyiciCimMotoru != null) {

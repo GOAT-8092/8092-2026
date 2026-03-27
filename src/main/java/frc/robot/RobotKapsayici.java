@@ -10,6 +10,7 @@ import com.pathplanner.lib.auto.NamedCommands;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -34,6 +35,7 @@ public class RobotKapsayici {
   private AticiAltSistemi aticiAltSistemi;
   private GenericHID surucuKontrolcusu = new GenericHID(OISabitleri.SURUCU_JOYSTICK_PORTU);
   private boolean surucuBagliOncekiDurum = false;
+  private double dugme10BaslangicZamani = 0.0;
 
   private SendableChooser<Command> otonomSecici;
 
@@ -68,8 +70,8 @@ public class RobotKapsayici {
 
     surusAltSistemi.setDefaultCommand(
         new SurusKomutu(
-            () -> guvenliEksenOku(OISabitleri.SURUCU_Y_EKSENI),
             () -> guvenliEksenOku(OISabitleri.SURUCU_X_EKSENI),
+            () -> guvenliEksenOku(OISabitleri.SURUCU_Y_EKSENI),
             () -> -guvenliEksenOku(OISabitleri.SURUCU_Z_EKSENI),
             surusAltSistemi
         )
@@ -222,6 +224,30 @@ public class RobotKapsayici {
     new JoystickButton(surucuKontrolcusu, 6)
         .whileTrue(new RunCommand(() -> taretAltSistemi.dondur(ModulSabitleri.TARET_HIZI), taretAltSistemi))
         .onFalse(new InstantCommand(() -> taretAltSistemi.durdur(), taretAltSistemi));
+
+    // 10 (Secenekler): Atici hemen baslar, 1sn sonra yukari tasiyici baslar.
+    new JoystickButton(surucuKontrolcusu, 10)
+        .onTrue(new InstantCommand(() -> {
+          dugme10BaslangicZamani = Timer.getFPGATimestamp();
+          aticiAltSistemi.at();
+        }, aticiAltSistemi))
+        .whileTrue(new RunCommand(() -> {
+          if (Timer.getFPGATimestamp() - dugme10BaslangicZamani >= 1.0) {
+            alimAltSistemi.depodanAticiyaYukariTasimaBaslat();
+          }
+        }, alimAltSistemi))
+        .onFalse(new InstantCommand(() -> {
+          alimAltSistemi.depodanAticiyaYukariTasimaDurdur();
+          aticiAltSistemi.durdur();
+        }, alimAltSistemi, aticiAltSistemi));
+
+    // 9 (Paylas): Yukari tasiyiciyi 0.5 sn ters cevirir, sonra otomatik durdurur.
+    new JoystickButton(surucuKontrolcusu, 9)
+        .onTrue(
+            new RunCommand(() -> alimAltSistemi.depodanAticiyaYukariTasimaTersBaslat(), alimAltSistemi)
+                .withTimeout(0.5)
+                .andThen(new InstantCommand(() -> alimAltSistemi.depodanAticiyaYukariTasimaDurdur(), alimAltSistemi))
+        );
   }
 
   private void pathPlannerKomutlariniKaydet() {

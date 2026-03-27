@@ -174,16 +174,16 @@ public class SurusAltSistemi extends SubsystemBase {
     
   }
 
-  public void drive(double ySpeed, double xSpeed, double zRotation) {
+  public void drive(double xSpeed, double ySpeed, double zRotation) {
     // WPILib expects (xSpeed, ySpeed, zRotation).
     mecanumDrive.driveCartesian(xSpeed, ySpeed, zRotation);
   }
 
-  public void drive(double ySpeed, double xSpeed, double zRotation, Rotation2d gyroAngle) {
+  public void drive(double xSpeed, double ySpeed, double zRotation, Rotation2d gyroAngle) {
     mecanumDrive.driveCartesian(xSpeed, ySpeed, zRotation, gyroAngle);
   }
 
-  public void driveFieldOriented(double ySpeed, double xSpeed, double zRotation) {
+  public void driveFieldOriented(double xSpeed, double ySpeed, double zRotation) {
     mecanumDrive.driveCartesian(xSpeed, ySpeed, zRotation, getHeading());
   }
 

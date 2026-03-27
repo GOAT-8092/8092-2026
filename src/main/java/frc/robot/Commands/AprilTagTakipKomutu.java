@@ -175,7 +175,7 @@ public class AprilTagTakipKomutu extends Command {
         thetaSpeed = Math.max(-0.5, Math.min(0.5, thetaSpeed));
 
         // Drive the robot
-        SurusAltSistemi.drive(ySpeed, xSpeed, thetaSpeed);
+        SurusAltSistemi.drive(xSpeed, ySpeed, thetaSpeed);
 
         SmartDashboard.putString("TrackAprilTag/Status", "Tracking");
     }

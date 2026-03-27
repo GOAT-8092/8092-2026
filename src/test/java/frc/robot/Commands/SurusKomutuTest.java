@@ -30,18 +30,18 @@ class SurusKomutuTest {
         AtomicReference<double[]> outputs = new AtomicReference<>(new double[] {0, 0, 0});
         SubsystemBase req = new SubsystemBase() {};
         SurusKomutu command = new SurusKomutu(
-            () -> 0.7,
             () -> 0.4,
+            () -> 0.7,
             () -> -0.2,
-            (y, x, z) -> outputs.set(new double[] {y, x, z}),
+            (x, y, z) -> outputs.set(new double[] {x, y, z}),
             req
         );
 
         command.execute();
         double[] out = outputs.get();
 
-        assertTrue(out[0] < 0.0);
-        assertTrue(out[1] > 0.0);
+        assertTrue(out[0] > 0.0);
+        assertTrue(out[1] < 0.0);
         assertTrue(out[2] < 0.0);
     }
 }

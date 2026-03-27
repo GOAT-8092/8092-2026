@@ -158,7 +158,7 @@ public class AprilTagaHizalamaKomutu extends Command {
 
         // Drive the robot
         // Note: Using field-oriented drive for better control
-        SurusAltSistemi.drive(ySpeed, xSpeed, thetaSpeed);
+        SurusAltSistemi.drive(xSpeed, ySpeed, thetaSpeed);
     }
 
     @Override
