@@ -23,7 +23,7 @@ Sol taraf ters, sag taraf duz. Disli orani: 12.75:1. Maks hiz: ~3.0 m/s.
 | Taret | NEO + Spark Max | CAN | 6 | %25 |
 
 > Taret yazilim siniri: **±90°** (toplam 180°). Kablo nedeniyle tam tur donusu yapilmaz.
-> Limit switch henuz eklenmemistir; enkoder her acilista 0'dan baslar.
+> Limit switch: DIO 9, normally closed. -90° = switch pozisyonu. L2 ile homing yapilir.
 
 ### Sensor ve Ag
 
@@ -48,16 +48,17 @@ Sol taraf ters, sag taraf duz. Disli orani: 12.75:1. Maks hiz: ~3.0 m/s.
 
 ### Buton Atamalari
 
-| Buton | PS4 | Eylem | Motor |
-|---|---|---|---|
-| 1 | Kare | Alim | PWM 9 |
-| 2 | Carpi | Geri at | PWM 9 |
-| 3 | Daire | Yukari tasiyici | PWM 8 |
-| 4 | Ucgen | Atici | CAN 5 |
-| 5 | L1 | Taret sola | CAN 6 |
-| 6 | R1 | Taret saga | CAN 6 |
-
-Tum butonlar `whileTrue`: basili tutulurken calisir, birakilinca durur.
+| Buton | PS4 | Eylem | Motor | Davranis |
+|---|---|---|---|---|
+| 1 | Kare | Alim | PWM 9 | whileTrue |
+| 2 | Carpi | Geri at | PWM 9 | whileTrue |
+| 3 | Daire | Yukari tasiyici | PWM 8 | whileTrue |
+| 4 | Ucgen | Atici | CAN 5 | whileTrue |
+| 5 | L1 | Taret sola | CAN 6 | whileTrue |
+| 6 | R1 | Taret saga | CAN 6 | whileTrue |
+| 7 | L2 | Taret homing (DIO 9) | CAN 6 | toggleOnTrue: ilk basin baslar, ikinci basin durdurur |
+| 9 | Paylas | Tasiyici ters (0.5s) | PWM 8 | onTrue |
+| 10 | Secenekler | Atici + tasiyici sirali | CAN 5 + PWM 8 | whileTrue |
 
 ---
 

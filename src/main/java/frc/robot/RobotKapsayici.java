@@ -25,6 +25,7 @@ import frc.robot.Subsystems.AticiAltSistemi;
 import frc.robot.Commands.SurusKomutu;
 import frc.robot.Commands.AprilTagaHizalamaKomutu;
 import frc.robot.Commands.AprilTagTakipKomutu;
+import frc.robot.Commands.TaretHomingKomutu;
 import frc.robot.Sabitler.*;
 
 public class RobotKapsayici {
@@ -240,6 +241,10 @@ public class RobotKapsayici {
           alimAltSistemi.depodanAticiyaYukariTasimaDurdur();
           aticiAltSistemi.durdur();
         }, alimAltSistemi, aticiAltSistemi));
+
+    // 7 (L2): Taret homing — ilk basista baslar, ikinci basista durdurur
+    new JoystickButton(surucuKontrolcusu, 7)
+        .toggleOnTrue(new TaretHomingKomutu(taretAltSistemi));
 
     // 9 (Paylas): Yukari tasiyiciyi 0.5 sn ters cevirir, sonra otomatik durdurur.
     new JoystickButton(surucuKontrolcusu, 9)

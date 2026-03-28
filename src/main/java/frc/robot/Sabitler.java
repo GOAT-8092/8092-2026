@@ -44,9 +44,17 @@ public final class Sabitler {
         public static final int TARET_MOTOR_ID = 5;
         public static final boolean TARET_MOTOR_TERS = false;
 
+        // Taret disli orani: 200T ring / 19T pinion = ~10.526:1
+        public static final double TARET_DISLI_ORANI = 200.0 / 19.0;
+
         // Taret aci sinirlari (toplam 180 derece hareket alani)
         public static final double TARET_MAKS_ACI = 90.0;   // derece
         public static final double TARET_MIN_ACI = -90.0;   // derece
+
+        // Taret limit switch (homing icin, normally closed)
+        public static final int TARET_LIMIT_SWITCH_DIO = 9;
+        // Homing sirasinda tareti limit switch'e dogru dondurmek icin hiz
+        public static final double TARET_HOMING_HIZI = -0.1;
     }
 
     public static class SurusSabitleri {
