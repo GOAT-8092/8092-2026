@@ -8,6 +8,7 @@ import java.util.function.DoubleSupplier;
 
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Subsystem;
 import edu.wpi.first.wpilibj2.command.Command;
 import frc.robot.Sabitler.SurusKontrolSabitleri;
@@ -52,13 +53,30 @@ public class SurusKomutu extends Command {
   @Override
   public void execute() {
     // WPILib NWU conventionu: xSpeed=ileri(+), ySpeed=sol(+)
-    double x = eksenSekillendir(-yHizi.getAsDouble(), SurusKontrolSabitleri.OTELEME_OLCEGI);
-    double y = eksenSekillendir(-xHizi.getAsDouble(), SurusKontrolSabitleri.YANLAMASINA_OLCEK);
-    double z = eksenSekillendir(zDonusu.getAsDouble(), SurusKontrolSabitleri.DONUS_OLCEGI);
+    double hamX = yHizi.getAsDouble();   // Axis 1 (ileri/geri)
+    double hamY = xHizi.getAsDouble();   // Axis 0 (yanal)
+    double hamZ = zDonusu.getAsDouble(); // Axis 2 (donus)
+
+    double x = eksenSekillendir(-hamX, SurusKontrolSabitleri.OTELEME_OLCEGI);
+    double y = eksenSekillendir(-hamY, SurusKontrolSabitleri.YANLAMASINA_OLCEK);
+    double z = eksenSekillendir(hamZ, SurusKontrolSabitleri.DONUS_OLCEGI);
 
     double xKomutu = xSinirlayici.calculate(x);
     double yKomutu = ySinirlayici.calculate(y);
     double zKomutu = zSinirlayici.calculate(z);
+
+    // Ham eksen degerleri (joystick'ten gelen ham deger)
+    SmartDashboard.putNumber("Surus/HamEksen_Ileri", hamX);
+    SmartDashboard.putNumber("Surus/HamEksen_Yanal", hamY);
+    SmartDashboard.putNumber("Surus/HamEksen_Donus", hamZ);
+    // Olubolgeli + kare yanit + olcekli degerler
+    SmartDashboard.putNumber("Surus/SekillendX", x);
+    SmartDashboard.putNumber("Surus/SekillendY", y);
+    SmartDashboard.putNumber("Surus/SekillendZ", z);
+    // Slew rate sonrasi suruculere giden nihai komutlar
+    SmartDashboard.putNumber("Surus/KomutX", xKomutu);
+    SmartDashboard.putNumber("Surus/KomutY", yKomutu);
+    SmartDashboard.putNumber("Surus/KomutZ", zKomutu);
 
     surusCikisi.sur(xKomutu, yKomutu, zKomutu);
   }

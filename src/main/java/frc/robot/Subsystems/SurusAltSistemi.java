@@ -25,6 +25,7 @@ import edu.wpi.first.math.kinematics.MecanumDriveKinematics;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
@@ -519,6 +520,19 @@ public class SurusAltSistemi extends SubsystemBase {
   SmartDashboard.putNumber("Drive/FrontRightOutput", frontRightMotor != null ? frontRightMotor.get() : 0.0);
   SmartDashboard.putNumber("Drive/RearLeftOutput", rearLeftMotor != null ? rearLeftMotor.get() : 0.0);
   SmartDashboard.putNumber("Drive/RearRightOutput", rearRightMotor != null ? rearRightMotor.get() : 0.0);
+
+  // Teker hizlari (m/s) — motor donus kontrolu icin
+  MecanumDriveWheelSpeeds hizlar = getWheelSpeeds();
+  SmartDashboard.putNumber("Drive/HizOnSol_ms", hizlar.frontLeftMetersPerSecond);
+  SmartDashboard.putNumber("Drive/HizOnSag_ms", hizlar.frontRightMetersPerSecond);
+  SmartDashboard.putNumber("Drive/HizArkaSol_ms", hizlar.rearLeftMetersPerSecond);
+  SmartDashboard.putNumber("Drive/HizArkaSag_ms", hizlar.rearRightMetersPerSecond);
+
+  // Batarya ve NavX saglik bilgisi
+  SmartDashboard.putNumber("Robot/BataryaVolt", RobotController.getBatteryVoltage());
+  SmartDashboard.putBoolean("Robot/NavXBagli", RobotBase.isReal() && navx != null && navx.isConnected());
+  SmartDashboard.putBoolean("Robot/NavXKalibre", RobotBase.isReal() && navx != null && !navx.isCalibrating());
+  SmartDashboard.putNumber("Robot/NavXYaw", RobotBase.isReal() && navx != null ? navx.getYaw() : simulatedHeading);
 
   // Read motor test toggles from SmartDashboard and schedule/cancel commands
   boolean flToggle = SmartDashboard.getBoolean("MotorTest/FrontLeft", false);
