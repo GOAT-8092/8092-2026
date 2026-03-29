@@ -1,4 +1,4 @@
-# CLAUDE.md
+# AGENTS.md
 
 Bu dosya, bu depoda calisirken gelistirici yardimcisina hizli teknik baglam verir.
 
@@ -15,7 +15,7 @@ Bu dosya, bu depoda calisirken gelistirici yardimcisina hizli teknik baglam veri
 
 - **On taraf:** Taret + Limelight 3 (atis/hedefleme yonu)
 - **Arka taraf:** Alim (intake)
-- Surus yaziliminda 180° donuk koordinat sistemi uygulanmistir (eski: alim onde idi)
+- Surus yaziliminda 180° donuk koordinat sistemi uygulanmistir
 
 ## Guncel Donanim
 
@@ -41,8 +41,8 @@ Bu dosya, bu depoda calisirken gelistirici yardimcisina hizli teknik baglam veri
 - `SurusAltSistemi` — mecanum surus, odometri, NavX, MegaTag2 poz fuzyonu
 - `GorusAltSistemi` — Limelight 3, AprilTag MegaTag2 poz tahmini
 - `AlimAltSistemi` — alim CIM + yukari tasiyici CIM
-- `AticiAltSistemi` — atici NEO, velocity PID + feedforward (4000 RPM)
-- `TaretAltSistemi` — taret NEO, ±90° yazilim + donanim soft limit, MAXMotion
+- `AticiAltSistemi` — atici NEO, velocity PID + feedforward (4000 RPM hedef)
+- `TaretAltSistemi` — taret NEO, ±90° yazilim + donanim soft limit, MAXMotion trapezoidal
 
 ### Komutlar (`Commands/`)
 - `SurusKomutu` — joystick ile mecanum surus

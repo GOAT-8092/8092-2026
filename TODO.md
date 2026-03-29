@@ -170,6 +170,20 @@
 
 ---
 
+## 5. Mekanik Degisiklikler (Takip)
+
+### 5.1 Robot Yonelimi 180° Takas ✅ TAMAMLANDI
+- **Degisiklik:** Taret + Limelight on tarafa tasindi; alim arka tarafa alindi.
+- **Kod etkisi:**
+  - `SurusKomutu`: yanal eksen negasyonu kaldirildi (`hamY` artik terslenmez)
+  - `Sabitler`: `TARET_ARKA_OFFSET_DERECE = 180.0` → `TARET_ON_OFFSET_DERECE = 0.0`
+  - `PozTabanliTaretKomutu`: offset sabiti guncellendi
+  - `TaretHomingKomutu`: yoni degismedi (-90° hala limit switch tarafi)
+- **Otomatik taret devre disi:** Kablo guvenligi icin buton 8 (R2) iptal edildi.
+  Yeniden etkinlestirmek icin `RobotKapsayici.java` 254. satira bak.
+
+---
+
 ## Referans Repoları
 
 | Repo | Konu | URL |
@@ -189,186 +203,4 @@
 
 ---
 
-*Son guncelleme: 2026-03-29 — 6 paralel arastirma ajenti ile olusturuldu*
-
-  NavX Yaw Negation (SurusAltSistemi.java line 579):
-  // Current (WRONG):
-  return Rotation2d.fromDegrees(navx.getYaw());
-  // Should be:
-  return Rotation2d.fromDegrees(-navx.getYaw());
-  NavX uses CW-positive rotation, WPILib uses CCW-positive. Without negation, field-oriented drive
-  and odometry have inverted heading. Confirmed by AdvantageKit's official NavX integration and
-  Mechanical Advantage.
-
-  ---
-  Mecanum Drive
-
-  ┌─────────────────────┬────────────────────────────┬──────────────────────────────┬──────────┐
-  │       Aspect        │         Your Code          │      2026 Best Practice      │  Status  │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ Spark Max API       │ New com.revrobotics.spark  │ Same                         │ Correct  │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ Motor inversion     │ Left side inverted,        │ Either side OK if consistent │ Correct  │
-  │                     │ consistent                 │                              │          │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ Deadband            │ 0.08 + quadratic curve     │ 0.04 built-in + custom       │ Good     │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ PoseEstimator       │ With vision fusion         │ Same                         │ Correct  │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ Slew rate limiting  │ Yes (1.0/2.0)              │ SlewRateLimiter(3) typical   │ Good     │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ Drive PID/FF        │ Raw set() percent          │ PID + feedforward +          │ Gap      │
-  │                     │                            │ setVoltage()                 │          │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ ChassisSpeeds       │ Not used                   │ Standard in advanced         │ Minor    │
-  │ discretize          │                            │ examples                     │ gap      │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ PoseEstimator std   │ Default (none)             │ VecBuilder.fill(0.05, 0.05,  │ Improve  │
-  │ devs                │                            │ 5deg)                        │          │
-  ├─────────────────────┼────────────────────────────┼──────────────────────────────┼──────────┤
-  │ IdleMode            │ Not set                    │ IdleMode.kBrake for drive    │ Missing  │
-  └─────────────────────┴────────────────────────────┴──────────────────────────────┴──────────┘
-
-  Key gap: Autonomous path accuracy will suffer without velocity PID + feedforward. WPILib
-  mecanumbot example uses PIDController + SimpleMotorFeedforward with setVoltage() for all drive
-  motors.
-
-  ---
-  Limelight / AprilTag Vision
-
-  ┌───────────────────┬────────────────────┬─────────────────────────────────────────┬──────────┐
-  │      Aspect       │     Your Code      │           2026 Best Practice            │  Status  │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ NT access         │ Raw getDouble()    │ LimelightHelpers v1.12                  │ Improve  │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ Pose mode         │ Raw botpose        │ MegaTag2 with SetRobotOrientation()     │ Major    │
-  │                   │ (MegaTag1)         │                                         │ gap      │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ Vision std devs   │ Not passed         │ VecBuilder.fill(0.1, 0.1, 10) or        │ Missing  │
-  │                   │                    │ distance-scaled                         │          │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ Tag count filter  │ None               │ 2+ tags OR 1 big tag                    │ Missing  │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ Rotation rate     │ None               │ Reject when spinning >360 deg/s         │ Missing  │
-  │ reject            │                    │                                         │          │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ Latency           │ Manual (correct)   │ Auto via LimelightHelpers               │ OK       │
-  │ compensation      │                    │                                         │          │
-  ├───────────────────┼────────────────────┼─────────────────────────────────────────┼──────────┤
-  │ Ambiguity filter  │ < 0.2              │ Same                                    │ Correct  │
-  └───────────────────┴────────────────────┴─────────────────────────────────────────┴──────────┘
-
-  Major finding: All competitive 2026 teams use MegaTag2 (getBotPoseEstimate_wpiBlue_MegaTag2) which
-   is gyro-assisted and more stable. Your code reads raw botpose_wpiblue array (MegaTag1) and never
-  calls SetRobotOrientation(). Teams like frc1678 scale standard deviations by avgTagDist for
-  distance-based trust.
-
-  ---
-  Turret (Andymark 6.875" AM-3936)
-
-  ┌────────────────┬───────────────────────┬─────────────────────────────────────┬────────────┐
-  │     Aspect     │       Your Code       │         2026 Best Practice          │   Status   │
-  ├────────────────┼───────────────────────┼─────────────────────────────────────┼────────────┤
-  │ PID            │ KP = 0.01, roboRIO    │ 0.01–0.6 or SparkMax onboard        │ OK (low    │
-  │                │ WPILib                │                                     │ end)       │
-  ├────────────────┼───────────────────────┼─────────────────────────────────────┼────────────┤
-  │ Soft limits    │ Software-only         │ SparkMax hardware softLimit         │ Improve    │
-  │                │ clamping              │                                     │            │
-  ├────────────────┼───────────────────────┼─────────────────────────────────────┼────────────┤
-  │ Motion         │ None                  │ MAXMotion trapezoidal               │ Missing    │
-  │ profiling      │                       │                                     │            │
-  ├────────────────┼───────────────────────┼─────────────────────────────────────┼────────────┤
-  │ Absolute       │ Limit switch homing   │ Absolute encoder seeding at startup │ Improve    │
-  │ encoder        │                       │                                     │            │
-  ├────────────────┼───────────────────────┼─────────────────────────────────────┼────────────┤
-  │ Angle          │ None                  │ Shortest-path unwrap within limits  │ Missing    │
-  │ unwrapping     │                       │                                     │            │
-  ├────────────────┼───────────────────────┼─────────────────────────────────────┼────────────┤
-  │ kI term        │ None                  │ Add small kI for friction           │ Missing    │
-  │                │                       │ steady-state error                  │            │
-  └────────────────┴───────────────────────┴─────────────────────────────────────┴────────────┘
-
-  Key finding: Team Nanuet uses ControlType.kMAXMotionTrapezoidal on SparkMax for smooth turret
-  movement with cruise velocity/acceleration limits. Team wavelength3572 seeds the relative encoder
-  from an absolute encoder at power-on, eliminating homing routines.
-
-  ---
-  Shooter (Andymark Launcher in a Box AM-5780)
-
-  ┌────────────────────┬───────────────────┬───────────────────────────────────────┬───────────┐
-  │       Aspect       │     Your Code     │          2026 Best Practice           │  Status   │
-  ├────────────────────┼───────────────────┼───────────────────────────────────────┼───────────┤
-  │ Control            │ set(0.90) percent │ Velocity PID + feedforward            │ Major gap │
-  ├────────────────────┼───────────────────┼───────────────────────────────────────┼───────────┤
-  │ RPM measurement    │ None              │ encoder.getVelocity() for RPM         │ Missing   │
-  ├────────────────────┼───────────────────┼───────────────────────────────────────┼───────────┤
-  │ Idle mode          │ Not set           │ kCoast for flywheel                   │ Missing   │
-  ├────────────────────┼───────────────────┼───────────────────────────────────────┼───────────┤
-  │ FF                 │ None              │ kV = 12.0/5676 ≈ 0.002 (REV official) │ Missing   │
-  ├────────────────────┼───────────────────┼───────────────────────────────────────┼───────────┤
-  │ Distance-based RPM │ None              │ Polynomial: 43.5d² + 119d + 2372      │ Missing   │
-  └────────────────────┴───────────────────┴───────────────────────────────────────┴───────────┘
-
-  Key finding: REV's official 2026 example uses ControlType.kVelocity with ClosedLoopSlot.kSlot1, kV
-   = 12.0/5767, and P = 0.0001. Team 7476 (2026) has a complete shoot-while-moving implementation
-  with distance-to-RPM polynomial curves.
-
-  Critical 2026 pitfall: Must explicitly set feedbackSensor(FeedbackSensor.kPrimaryEncoder) and use
-  ControlType.kVelocity (NOT kMAXVelocity).
-
-  ---
-  NavX + Spark Max Configuration
-
-  ┌───────────────────┬────────────────────────────────┬───────────────────────────────────────┐
-  │       Item        │             Status             │             Action Needed             │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ NavX library      │ Correct (com.studica.frc.AHRS  │ None                                  │
-  │                   │ v2026)                         │                                       │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ NavX yaw sign     │ BUG — not negated              │ Fix immediately                       │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ REVLib version    │ 2026.0.1                       │ Update to 2026.0.5                    │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ SparkMax firmware │ Unknown                        │ Update to spline-26.1.3               │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ IdleMode on drive │ Missing                        │ Add IdleMode.kBrake                   │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ IdleMode on       │ Missing                        │ Add IdleMode.kCoast                   │
-  │ shooter           │                                │                                       │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ IdleMode on       │ Missing                        │ Add IdleMode.kBrake                   │
-  │ turret            │                                │                                       │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ Voltage           │ Missing                        │ Add .voltageCompensation(12)          │
-  │ compensation      │                                │                                       │
-  ├───────────────────┼────────────────────────────────┼───────────────────────────────────────┤
-  │ SmartDashboard    │ Used extensively               │ Deprecating in 2027 — plan Elastic    │
-  │                   │                                │ migration                             │
-  └───────────────────┴────────────────────────────────┴───────────────────────────────────────┘
-
-  ---
-  Priority Action Items
-
-  Immediate (affects correctness):
-  1. Fix NavX yaw negation in getHeading()
-  2. Update REVLib to 2026.0.5 + SparkMax firmware to spline-26.1.3
-
-  High (affects performance):
-  3. Add IdleMode to all SparkMax configs
-  4. Switch vision to LimelightHelpers + MegaTag2 + pass std devs to addVisionMeasurement
-  5. Add velocity PID + feedforward to shooter (NEO encoder → RPM control)
-
-  Medium (improves quality):
-  6. Add SparkMax hardware soft limits for turret
-  7. Add drive velocity PID/FF for autonomous accuracy
-  8. Add vision rejection filters (tag count, rotation rate, distance)
-  9. Consider MAXMotion trapezoidal for turret positioning
-
-  Reference repos found:
-  - wpilibsuite/allwpilib — official mecanum examples
-  - wavelength3572/Robot-2026 — turret with absolute encoder seeding
-  - Nanuet-Knightronz/2026-Codebase — MAXMotion turret
-  - Earl-Of-March-FRC/2026-7476-Rebuilt — full shooter with shoot-while-moving
-  - wcpllc/2026CompetitiveConcept — advanced MegaTag2 vision
-  - frc1678/C2025-Public — distance-scaled vision std devs
-  - REVrobotics/REVLib-Examples — official 2026 velocity PID
+*Son guncelleme: 2026-03-29*
