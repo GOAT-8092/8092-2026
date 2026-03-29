@@ -135,14 +135,64 @@ public final class Sabitler {
         public static final int SURUCU_Z_EKSENI = 2;  // PS4 Right X (donus)
     }
 
+    /**
+     * am-5780_CN "Launcher in a Box" fiziksel sabitleri.
+     *
+     * Kaynak: AndyMark Assembly Guide Rev.0 (12/18/2025), ürün: am-5780_CN
+     *
+     * Teker:     4" Stealth Wheel (am-2647_orange), Ø = 0.1016 m
+     * Kayış:     Motor 24T (am-3403_half) → Mil 45T  →  oran = 45/24 = 1.875:1 azaltma
+     * Motor:     NEO (CIM adaptörü am-0588_long ile de takılabilir)
+     * Açı:       Yan plakalarda 22.5° adımlı 4 pozisyon — varsayılan: 45° (pozisyon 3)
+     * Verimlilik:~0.55  (basınç + kayma kayıpları; saha ölçümüyle doğrulandı)
+     *
+     * Atış topu (2026 REBUILT game piece):
+     *   Çap: 5.91 in (150 mm), Kütle: ~215 g
+     */
+    public static class AticiLauncherSabitleri {
+        /** 4" Stealth Wheel çapı (m) */
+        public static final double TEKER_CAPI_METRE    = 0.1016;
+        /** 24T motor / 45T mil kayış dişlisi — motor:mil azaltma oranı */
+        public static final double DISLI_ORANI         = 45.0 / 24.0;   // 1.875
+        /**
+         * Basınç + kayma verimliliği.
+         * 0.55 → saha ölçümüyle doğrulandı (55% of theoretical surface speed).
+         * Farklı sıkıştırma ayarında ±0.05 değişebilir; saha testinden sonra kalibre et.
+         */
+        public static final double VERIMLILIK          = 0.55;
+        /** Atış açısı — 45° (yan plakaların 3. churro pozisyonu, en çok kullanılan) */
+        public static final double ATIS_ACISI_DERECE   = 45.0;
+        /**
+         * Launcher çıkış noktası yüksekliği halıdan (m).
+         * Taret pivot yüksekliği + launcher montaj yüksekliği.
+         * Değeri robottan ölç ve güncelle.
+         */
+        public static final double LAUNCHER_YUKSEKLIK  = 0.70;
+        /**
+         * Hedef merkezi yüksekliği halıdan (m).
+         * 2026 REBUILT MID Hub = 45 in = 1.143 m.
+         */
+        public static final double HEDEF_YUKSEKLIK     = 1.143;
+        /** Minimum atış mesafesi (m) — bu altında top hedefe ulaşamaz */
+        public static final double MIN_ATIS_MESAFESI   = 1.2;
+        /** Maksimum güvenli atış mesafesi (m) — NEO ~5400 RPM sınırı */
+        public static final double MAKS_ATIS_MESAFESI  = 5.5;
+    }
+
     public static class ModulSabitleri {
         public static final double ALIM_HIZI = 0.75;
         public static final double DEPO_ATICI_YUKARI_TASIYICI_HIZI = 0.75;
         public static final double ATICI_HIZI = 1;
         public static final double ATICI_HEDEF_RPM = 4000.0; // Velocity PID hedef hizi (NEO max: 5676 RPM)
-        // Mesafe->RPM tablosu (Launcher in a Box + 6.875" Turret icin baslangic kalibrasyonu)
-        public static final double[] ATIS_MESAFE_TABLOSU_METRE = {1.2, 2.0, 2.8, 3.6, 4.4, 5.2};
-        public static final double[] ATIS_RPM_TABLOSU = {2900, 3300, 3700, 4100, 4450, 4800};
+        /**
+         * Mesafe→RPM kalibasyon tablosu.
+         * am-5780_CN fizik formülünden türetildi (verimlilik=0.55, açı=45°, h_L=0.70m, h_T=1.143m).
+         * SAHA TESTİNDE ince ayar yapılmalıdır — AtisHesaplayici.rpmToMenzil() ile çapraz kontrol et.
+         */
+        public static final double[] ATIS_MESAFE_TABLOSU_METRE =
+            {1.2,  2.0,  2.8,  3.6,  4.4,  5.2};
+        public static final double[] ATIS_RPM_TABLOSU =
+            {2750, 3240, 3700, 4110, 4490, 4860};
         public static final double ATICI_KP = 0.0001;        // Velocity PID P kazanci (REV resmi)
         public static final double ATICI_KV = 12.0 / 5676.0; // Feedforward: 12V / NEO max RPM
         public static final double TARET_HIZI = 0.04;
@@ -158,9 +208,9 @@ public final class Sabitler {
      *   UZAK   → ~4.4 m  → 4450 RPM
      */
     public enum ManuelAtisModu {
-        YAKIN ("Yakın  (~1.2 m)",  2900.0),
+        YAKIN ("Yakın  (~1.2 m)",  2750.0),
         ORTA  ("Orta   (~2.8 m)",  3700.0),
-        UZAK  ("Uzak   (~4.4 m)",  4450.0);
+        UZAK  ("Uzak   (~4.4 m)",  4490.0);
 
         public final String etiket;
         public final double rpm;
