@@ -100,6 +100,7 @@ public class SurusAltSistemi extends SubsystemBase {
     SparkMaxConfig reversedConfig = new SparkMaxConfig();
     reversedConfig.inverted(true);
     reversedConfig.idleMode(IdleMode.kBrake); // Aninda durma — pozisyon kaybini onler
+    reversedConfig.voltageCompensation(12); // 3.7: batarya voltaj dususunda tutarli cikis
     reversedConfig.smartCurrentLimit(
         MotorSabitleri.SURUS_MOTORU_DURMA_AKIM_SINIRI,
         MotorSabitleri.SURUS_MOTORU_BOSTA_AKIM_SINIRI,
@@ -109,6 +110,7 @@ public class SurusAltSistemi extends SubsystemBase {
     SparkMaxConfig nonReversedConfig = new SparkMaxConfig();
     nonReversedConfig.inverted(false);
     nonReversedConfig.idleMode(IdleMode.kBrake); // Aninda durma — pozisyon kaybini onler
+    nonReversedConfig.voltageCompensation(12); // 3.7: batarya voltaj dususunda tutarli cikis
     nonReversedConfig.smartCurrentLimit(
         MotorSabitleri.SURUS_MOTORU_DURMA_AKIM_SINIRI,
         MotorSabitleri.SURUS_MOTORU_BOSTA_AKIM_SINIRI,

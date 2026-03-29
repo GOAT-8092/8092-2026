@@ -32,6 +32,7 @@ public class TaretAltSistemi extends SubsystemBase {
             SparkMaxConfig yapilandirma = new SparkMaxConfig();
             yapilandirma.inverted(MotorSabitleri.TARET_MOTOR_TERS);
             yapilandirma.idleMode(IdleMode.kBrake); // Pozisyon tutar — taret hedefe kilitli kalir
+            yapilandirma.voltageCompensation(12); // batarya voltaj dususunda tutarli cikis
 
             // SparkMax donanim soft limitleri — RoboRIO cokse bile motor korunur
             float ileriLimitRot = (float) aciToMotorRotasyonu(MotorSabitleri.TARET_MAKS_ACI);

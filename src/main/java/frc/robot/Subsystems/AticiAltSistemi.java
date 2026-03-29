@@ -26,6 +26,7 @@ public class AticiAltSistemi extends SubsystemBase {
             SparkMaxConfig yapilandirma = new SparkMaxConfig();
             yapilandirma.inverted(MotorSabitleri.ATICI_MOTOR_TERS);
             yapilandirma.idleMode(IdleMode.kCoast); // Volan momentumunu korur — ani frenleme top hizini dusurur
+            yapilandirma.voltageCompensation(12); // batarya voltaj dususunda tutarli RPM
 
             // Velocity PID + Feedforward (REV 2026 resmi ornegi)
             yapilandirma.closedLoop
