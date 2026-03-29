@@ -41,6 +41,9 @@ class CommandSchedulerBehaviorTest {
     void secondCommandInterruptsFirstOnSameRequirement() {
         CommandScheduler scheduler = CommandScheduler.getInstance();
         scheduler.cancelAll();
+        scheduler.unregisterAllSubsystems();
+        scheduler.clearComposedCommands();
+        scheduler.enable();
 
         TestSubsystem subsystem = new TestSubsystem();
         Command first = new EndlessCommand(subsystem);

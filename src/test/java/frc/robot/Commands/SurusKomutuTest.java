@@ -5,12 +5,20 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 class SurusKomutuTest {
+    @BeforeAll
+    static void halBaslat() {
+        HAL.initialize(500, 0);
+    }
+
     @Test
     @Tag("fast")
     void shapeAxisAppliesDeadbandAndSquareCurve() {
@@ -32,13 +40,15 @@ class SurusKomutuTest {
         // Axis 1 (yHizi) fiziksel olarak ileri = negatif deger uretir
         // Axis 0 (xHizi) sag = pozitif; bu test: ileri + saga + sola donus
         SurusKomutu command = new SurusKomutu(
-            () -> 0.4,
-            () -> -0.7,
+            () -> -0.4,
+            () -> 0.7,
             () -> -0.2,
             (x, y, z) -> outputs.set(new double[] {x, y, z}),
             req
         );
 
+        command.execute();
+        Timer.delay(0.02);
         command.execute();
         double[] out = outputs.get();
 
