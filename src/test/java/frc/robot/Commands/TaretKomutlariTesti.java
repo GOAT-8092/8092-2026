@@ -41,7 +41,8 @@ class TaretKomutlariTesti {
     @Tag("fast")
     void taretTakipHedefGorunurkenDondurur() {
         GorusAltSistemi gorus = mock(GorusAltSistemi.class);
-        when(gorus.hasTarget()).thenReturn(true);
+        // TaretTakipKomutu artık isHedefTagGorunuyor() kullanıyor (tag filtrelemeli)
+        when(gorus.isHedefTagGorunuyor()).thenReturn(true);
         when(gorus.getHorizontalOffset()).thenReturn(10.0);
 
         TaretTakipKomutu komut = new TaretTakipKomutu(taret, gorus);
