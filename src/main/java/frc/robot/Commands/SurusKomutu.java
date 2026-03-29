@@ -58,7 +58,7 @@ public class SurusKomutu extends Command {
     double hamZ = zDonusu.getAsDouble(); // Axis 2 (donus)
 
     double x = eksenSekillendir(-hamX, SurusKontrolSabitleri.OTELEME_OLCEGI);
-    double y = eksenSekillendir(-hamY, SurusKontrolSabitleri.YANLAMASINA_OLCEK);
+    double y = eksenSekillendir(hamY, SurusKontrolSabitleri.YANLAMASINA_OLCEK);
     double z = eksenSekillendir(hamZ, SurusKontrolSabitleri.DONUS_OLCEGI);
 
     double xKomutu = xSinirlayici.calculate(x);
