@@ -29,6 +29,9 @@ import frc.robot.Commands.TaretHomingKomutu;
 import frc.robot.Commands.TaretTakipKomutu;
 import frc.robot.Commands.PozTabanliTaretKomutu;
 import frc.robot.Sabitler.*;
+import frc.robot.util.Elastic;
+import frc.robot.util.Elastic.Notification;
+import frc.robot.util.Elastic.NotificationLevel;
 
 public class RobotKapsayici {
   private GorusAltSistemi gorusAltSistemi;
@@ -39,6 +42,10 @@ public class RobotKapsayici {
   private GenericHID surucuKontrolcusu = new GenericHID(OISabitleri.SURUCU_JOYSTICK_PORTU);
   private boolean surucuBagliOncekiDurum = false;
   private double dugme10BaslangicZamani = 0.0;
+
+  // Elastic bildirim hız sınırı
+  private boolean limelightHataBildirimGonderildi = false;
+  private boolean aticiHazirBildirimGonderildi = false;
 
   private SendableChooser<Command> otonomSecici;
 
@@ -66,7 +73,7 @@ public class RobotKapsayici {
     taretAltSistemi = new TaretAltSistemi();
     alimAltSistemi = new AlimAltSistemi();
     aticiAltSistemi = new AticiAltSistemi();
-    SmartDashboard.setDefaultNumber("Ayarlama/TaretHizi", ModulSabitleri.TARET_HIZI);
+    SmartDashboard.putNumber("Ayarlama/TaretHizi", ModulSabitleri.TARET_HIZI);
     baglamalariYapilandir();
 
     // Not: PS4 kontrolcusu USB ile bagli olmali ve Driver Station'da gorunmelidir.
@@ -84,14 +91,14 @@ public class RobotKapsayici {
 
     try {
       otonomSecici = AutoBuilder.buildAutoChooser();
-      SmartDashboard.putData("Otonom Secici", otonomSecici);
+      SmartDashboard.putData("Auto Chooser", otonomSecici);
     } catch (Exception e) {
       DriverStation.reportError("PathPlanner otonomlari yuklenemedi: " + e.getMessage(), true);
       e.printStackTrace();
       otonomSecici = new SendableChooser<>();
       // PathPlanner hatasinda bos secenekle devam eder.
       otonomSecici.setDefaultOption("Yok (PathPlanner Hatasi)", null);
-      SmartDashboard.putData("Otonom Secici", otonomSecici);
+      SmartDashboard.putData("Auto Chooser", otonomSecici);
     }
 
     // Baslangicta kontrolcu durumunu kaydeder.
@@ -108,6 +115,7 @@ public class RobotKapsayici {
    */
   public void periyodik() {
     girdiBaglantiDurumunuGuncelle();
+    elasticDurumKontrol();
 
     // Ham buton durumlarini hata ayiklama icin okur.
     boolean dugme1 = guvenliDugmeOku(1);
@@ -140,19 +148,17 @@ public class RobotKapsayici {
     // Tum eksen degerlerini okur (PS4'te 6 eksen vardir).
     double eksen0 = guvenliEksenOku(0);  // Sol Analog X
     double eksen1 = guvenliEksenOku(1);  // Sol Analog Y
-    double eksen2 = guvenliEksenOku(2);  // Sol Tetik (L2)
-    double eksen3 = guvenliEksenOku(3);  // Sag Analog X
-    // Bazi kontrolcu/surucu kombinasyonlarinda axis 4/5 mevcut degil.
-    // DS uyarisi spamini onlemek icin bu eksenler zorunlu okunmaz.
-    double eksen4 = 0.0;
-    double eksen5 = 0.0;
+    double eksen2 = guvenliEksenOku(2);  // Sag Analog X
+    double eksen3 = guvenliEksenOku(3);  // Sol Tetik (L2)
+    double eksen4 = guvenliEksenOku(4);  // Sag Tetik (R2)
+    double eksen5 = guvenliEksenOku(5);  // Sag Analog Y
 
     SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen0-SolX"), eksen0);
     SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen1-SolY"), eksen1);
-    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen2-L2"), eksen2);
-    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen3-SagX"), eksen3);
-    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen4-SagY"), eksen4);
-    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen5-R2"), eksen5);
+    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen2-SagX"), eksen2);
+    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen3-L2"), eksen3);
+    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen4-R2"), eksen4);
+    SmartDashboard.putNumber(surucuIstasyonuAnahtari("Eksen5-SagY"), eksen5);
 
     // POV (D-pad) degerini okur.
     int yonTusu = guvenliPovOku();
@@ -182,7 +188,7 @@ public class RobotKapsayici {
 
     // Eksen gorunum metnini olusturur.
     String eksenBilgisi = String.format("L:(%.2f,%.2f) R:(%.2f,%.2f) LT:%.2f RT:%.2f",
-        eksen0, eksen1, eksen3, eksen4, eksen2, eksen5);
+        eksen0, eksen1, eksen2, eksen5, eksen3, eksen4);
     SmartDashboard.putString(surucuIstasyonuAnahtari("EksenBilgisi"), eksenBilgisi);
 
     // POV yon gorunum metnini olusturur.
@@ -278,12 +284,45 @@ public class RobotKapsayici {
     boolean bagli = DriverStation.isJoystickConnected(OISabitleri.SURUCU_JOYSTICK_PORTU);
     if (bagli != surucuBagliOncekiDurum) {
       surucuBagliOncekiDurum = bagli;
-      DriverStation.reportWarning(
-          bagli ? "Surucu kontrolcusu baglandi (port " + OISabitleri.SURUCU_JOYSTICK_PORTU + ")"
-              : "Surucu kontrolcusu baglantisi koptu (port " + OISabitleri.SURUCU_JOYSTICK_PORTU + ")",
-          false);
+      if (bagli) {
+        Elastic.sendNotification(new Notification(NotificationLevel.INFO,
+            "Kontrolcü Bağlandı", "PS4 kontrolcüsü port " + OISabitleri.SURUCU_JOYSTICK_PORTU + "'e bağlandı."));
+      } else {
+        Elastic.sendNotification(new Notification(NotificationLevel.ERROR,
+            "Kontrolcü Koptu!", "PS4 kontrolcüsü bağlantısı kesildi — port " + OISabitleri.SURUCU_JOYSTICK_PORTU));
+      }
     }
     SmartDashboard.putBoolean(surucuIstasyonuAnahtari("KontrolcuBagli"), bagli);
+  }
+
+  /** Kritik sistem durumlarını kontrol eder ve tek seferlik Elastic bildirimi gönderir */
+  private void elasticDurumKontrol() {
+    // Limelight config hatası — DriverStation aktif ve config yanlışsa uyar
+    if (DriverStation.isEnabled()) {
+      boolean limelightOk = gorusAltSistemi.isLimelightConfigOk();
+      if (!limelightOk && !limelightHataBildirimGonderildi) {
+        Elastic.sendNotification(new Notification(NotificationLevel.WARNING,
+            "Limelight Config Hatası",
+            gorusAltSistemi.getLimelightConfigStatus(), 5000));
+        limelightHataBildirimGonderildi = true;
+      } else if (limelightOk) {
+        limelightHataBildirimGonderildi = false; // Config düzelince bayrak sıfırla
+      }
+
+      // Atıcı hedef RPM'e ulaştığında bildir (tek seferlik)
+      boolean aticiHazir = aticiAltSistemi.isHizaUlasti();
+      if (aticiHazir && !aticiHazirBildirimGonderildi) {
+        Elastic.sendNotification(new Notification(NotificationLevel.INFO,
+            "Atıcı Hazır", String.format("%.0f RPM — atış yapılabilir.", aticiAltSistemi.getAktuelRPM()), 2000));
+        aticiHazirBildirimGonderildi = true;
+      } else if (!aticiHazir) {
+        aticiHazirBildirimGonderildi = false;
+      }
+    } else {
+      // Devre dışıyken bayrakları sıfırla
+      limelightHataBildirimGonderildi = false;
+      aticiHazirBildirimGonderildi = false;
+    }
   }
 
   private double guvenliEksenOku(int eksen) {

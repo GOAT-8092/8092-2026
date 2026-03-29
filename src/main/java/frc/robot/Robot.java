@@ -22,12 +22,9 @@ public class Robot extends TimedRobot {
 
   @Override
   public void robotInit() {
-    Elastic.selectTab("Auto");
-    Elastic.sendNotification(
-        new Notification(
-            NotificationLevel.INFO,
-            "Robot Startup",
-            "ElasticLib is configured and publishing from Robot code."));
+    Elastic.selectTab("Pit");
+    Elastic.sendNotification(new Notification(NotificationLevel.INFO,
+        "Robot Hazir", "Sistem baslatildi. Kontroller ve sensörleri dogrulayın."));
   }
 
   @Override
@@ -40,7 +37,9 @@ public class Robot extends TimedRobot {
   }
 
   @Override
-  public void disabledInit() {}
+  public void disabledInit() {
+    Elastic.selectTab("Pit");
+  }
 
   @Override
   public void disabledPeriodic() {}
@@ -50,6 +49,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void autonomousInit() {
+    Elastic.selectTab("Auto");
+    Elastic.sendNotification(new Notification(NotificationLevel.INFO,
+        "Otonom Başladı", "Sensörler sıfırlandı, otonom rota çalışıyor."));
+
     m_robotKapsayici.sensorleriSifirla();
 
     m_otonomKomut = m_robotKapsayici.otonomKomutAl();
@@ -67,6 +70,10 @@ public class Robot extends TimedRobot {
 
   @Override
   public void teleopInit() {
+    Elastic.selectTab("Teleop");
+    Elastic.sendNotification(new Notification(NotificationLevel.INFO,
+        "Teleop Başladı", "Süruş kontrolü sürücüye devredildi."));
+
     m_robotKapsayici.sensorleriSifirla();
 
     if (m_otonomKomut != null) {
