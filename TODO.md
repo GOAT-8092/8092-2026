@@ -6,7 +6,7 @@
 
 ## 1. KRITIK — Hemen Duzeltilmeli
 
-### 1.1 NavX Yaw Negation Bug
+### 1.1 NavX Yaw Negation Bug ✅ TAMAMLANDI
 - **Dosya:** `SurusAltSistemi.java` (~satir 579, `getHeading()`)
 - **Sorun:** NavX CW-pozitif, WPILib CCW-pozitif kullanir. `Rotation2d.fromDegrees(navx.getYaw())` negatif almadan donduruluyor.
 - **Etki:** Alan-yonlu surus ve odometri ters yonde calisiyor.
@@ -19,7 +19,7 @@
   ```
 - **Kaynak:** AdvantageKit resmi NavX entegrasyonu, Mechanical Advantage
 
-### 1.2 REVLib ve SparkMax Firmware Guncellemesi
+### 1.2 REVLib ve SparkMax Firmware Guncellemesi ✅ TAMAMLANDI (REVLib; SparkMax firmware fiziksel)
 - **Mevcut:** REVLib `2026.0.1`
 - **Hedef:** REVLib `2026.0.5` + SparkMax firmware `spline-26.1.3`
 - **Dosya:** `vendordeps/REVLib.json` ve REV Hardware Client
@@ -29,7 +29,7 @@
 
 ## 2. YUKSEK — Performansi Etkiliyor
 
-### 2.1 SparkMax IdleMode Eksik
+### 2.1 SparkMax IdleMode Eksik ✅ TAMAMLANDI
 - **Dosya:** `SurusAltSistemi.java`, `AticiAltSistemi.java`, `TaretAltSistemi.java`
 - **Sorun:** hicbir SparkMax konfigurasyonunda `idleMode` belirtilmemis.
 - **Duzeltme:**
@@ -40,7 +40,7 @@
   reversedConfig.idleMode(IdleMode.kBrake);
   ```
 
-### 2.2 Vision: MegaTag2 ve LimelightHelpers Gecisi
+### 2.2 Vision: MegaTag2 ve LimelightHelpers Gecisi ✅ TAMAMLANDI
 - **Dosya:** `GorusAltSistemi.java`, `SurusAltSistemi.java`
 - **Sorunlar:**
   - Ham `botpose_wpiblue` dizisi okunuyor (MegaTag1)
@@ -110,7 +110,7 @@
 - **Fayda:** Daha yumusak tareti hareket, daha az asinma
 - **Kaynak:** `Nanuet-Knightronz/2026-Codebase`
 
-### 3.3 Taret: Absolute Encoder ile Baslangic Referansi
+### 3.3 Taret: Absolute Encoder ile Baslangic Referansi ⏭️ ATLANDI (donanım yok)
 - **Mevcut:** Limit switch ile homing (her mac basi)
 - **Oneri:** Baslangicta relative enkoderi absolute enkoderden seed et → homing gereksiz
 - **Kaynak:** `wavelength3572/Robot-2026`, `Nanuet-Knightronz/2026-Codebase`
