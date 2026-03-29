@@ -27,6 +27,8 @@ import edu.wpi.first.math.kinematics.MecanumDriveWheelPositions;
 import edu.wpi.first.math.kinematics.MecanumDriveWheelSpeeds;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj.drive.MecanumDrive;
@@ -78,6 +80,14 @@ public class SurusAltSistemi extends SubsystemBase {
   private long navXZeroSettleEndMs = 0;
   private String navXValidationStatus = "IDLE";
   private String navXValidationErrorCode = "OK";
+
+  // 3.5: Teker velocity PID + Feedforward (otonom yol takibi icin)
+  private final SimpleMotorFeedforward surusFeedforward =
+      new SimpleMotorFeedforward(SurusSabitleri.SURUS_FF_KS, SurusSabitleri.SURUS_FF_KV);
+  private final PIDController onSolPID  = new PIDController(SurusSabitleri.SURUS_PID_KP, 0, 0);
+  private final PIDController onSagPID  = new PIDController(SurusSabitleri.SURUS_PID_KP, 0, 0);
+  private final PIDController arkaSolPID = new PIDController(SurusSabitleri.SURUS_PID_KP, 0, 0);
+  private final PIDController arkaSagPID = new PIDController(SurusSabitleri.SURUS_PID_KP, 0, 0);
 
   // Vision subsystem for pose estimation
   private GorusAltSistemi GorusAltSistemi;
@@ -206,15 +216,21 @@ public class SurusAltSistemi extends SubsystemBase {
   }
 
   public void setSpeeds(MecanumDriveWheelSpeeds wheelSpeeds) {
-    double frontLeftOutput = wheelSpeeds.frontLeftMetersPerSecond / SurusSabitleri.MAKS_HIZ_METRE_SANIYE;
-    double frontRightOutput = wheelSpeeds.frontRightMetersPerSecond / SurusSabitleri.MAKS_HIZ_METRE_SANIYE;
-    double rearLeftOutput = wheelSpeeds.rearLeftMetersPerSecond / SurusSabitleri.MAKS_HIZ_METRE_SANIYE;
-    double rearRightOutput = wheelSpeeds.rearRightMetersPerSecond / SurusSabitleri.MAKS_HIZ_METRE_SANIYE;
+    // 3.5: Feedforward + PID ile setVoltage — batarya voltajindan bagimsiz, daha hassas yol takibi
+    double flSetpoint = wheelSpeeds.frontLeftMetersPerSecond;
+    double frSetpoint = wheelSpeeds.frontRightMetersPerSecond;
+    double rlSetpoint = wheelSpeeds.rearLeftMetersPerSecond;
+    double rrSetpoint = wheelSpeeds.rearRightMetersPerSecond;
 
-    frontLeftMotor.set(frontLeftOutput);
-    frontRightMotor.set(frontRightOutput);
-    rearLeftMotor.set(rearLeftOutput);
-    rearRightMotor.set(rearRightOutput);
+    double flVolt = surusFeedforward.calculate(flSetpoint) + onSolPID.calculate(getVelocity(frontLeftMotor.getEncoder()), flSetpoint);
+    double frVolt = surusFeedforward.calculate(frSetpoint) + onSagPID.calculate(getVelocity(frontRightMotor.getEncoder()), frSetpoint);
+    double rlVolt = surusFeedforward.calculate(rlSetpoint) + arkaSolPID.calculate(getVelocity(rearLeftMotor.getEncoder()), rlSetpoint);
+    double rrVolt = surusFeedforward.calculate(rrSetpoint) + arkaSagPID.calculate(getVelocity(rearRightMotor.getEncoder()), rrSetpoint);
+
+    frontLeftMotor.setVoltage(flVolt);
+    frontRightMotor.setVoltage(frVolt);
+    rearLeftMotor.setVoltage(rlVolt);
+    rearRightMotor.setVoltage(rrVolt);
 
     // Feed MotorSafety watchdog since we're setting motors directly
     // This is important for PathPlanner which calls setSpeeds() directly

@@ -93,6 +93,13 @@ public final class Sabitler {
         // Kayiplar dahil temkinli tahmin: ~3.0 m/s
         public static final double MAKS_HIZ_METRE_SANIYE = 3.0;
 
+        // Velocity PID + Feedforward sabitleri (otonom yol takibi icin)
+        // kS: motorun harekete gecmesi icin gereken minimum voltaj
+        // kV: hiz basvurusu basi dusurulmesi gereken voltaj (12V / maks_hiz)
+        public static final double SURUS_FF_KS = 0.1;   // Volt (statik katsayi)
+        public static final double SURUS_FF_KV = 12.0 / MAKS_HIZ_METRE_SANIYE; // V/(m/s)
+        public static final double SURUS_PID_KP = 0.3;  // Volt / (m/s hata)
+
     }
 
     public static class SurusKontrolSabitleri {
