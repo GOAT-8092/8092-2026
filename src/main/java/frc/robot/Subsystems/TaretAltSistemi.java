@@ -1,8 +1,12 @@
 package frc.robot.Subsystems;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.FeedbackSensor;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.MAXMotionConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
@@ -13,6 +17,7 @@ import frc.robot.Sabitler.MotorSabitleri;
 
 public class TaretAltSistemi extends SubsystemBase {
     private SparkMax taretMotoru;
+    private SparkClosedLoopController pidKontrolcu;
     private RelativeEncoder taretEnkoderi;
     private double sonKomutHizi = 0.0;
 
@@ -37,13 +42,28 @@ public class TaretAltSistemi extends SubsystemBase {
                 .reverseSoftLimitEnabled(true)
                 .reverseSoftLimit(geriLimitRot);
 
+            // MAXMotion trapezoidal profil (3.2) + kI surme hatasi giderici (3.4)
+            yapilandirma.closedLoop
+                .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
+                .p(MotorSabitleri.TARET_POZ_KP)
+                .i(MotorSabitleri.TARET_KI)
+                .d(0)
+                .outputRange(-1, 1);
+            yapilandirma.closedLoop.maxMotion
+                .maxVelocity(MotorSabitleri.TARET_MAXMOTION_CRUISE_RPM)
+                .maxAcceleration(MotorSabitleri.TARET_MAXMOTION_ACCEL_RPM_S)
+                .allowedClosedLoopError(MotorSabitleri.TARET_MAXMOTION_HATA_TOLERANSI)
+                .positionMode(MAXMotionConfig.MAXMotionPositionMode.kMAXMotionTrapezoidal);
+
             taretMotoru.configure(yapilandirma,
                 com.revrobotics.spark.SparkBase.ResetMode.kNoResetSafeParameters,
                 com.revrobotics.spark.SparkBase.PersistMode.kPersistParameters);
             taretEnkoderi = taretMotoru.getEncoder();
+            pidKontrolcu = taretMotoru.getClosedLoopController();
         } else {
             taretMotoru = null;
             taretEnkoderi = null;
+            pidKontrolcu = null;
         }
     }
 
@@ -61,8 +81,7 @@ public class TaretAltSistemi extends SubsystemBase {
     /** Enkoderi limit switch pozisyonuna ayarla (-90°) */
     public void enkoderiSifirla() {
         if (taretEnkoderi != null) {
-            // -90° = -90 / (360 / disli_orani) motor rotasyonu
-            double motorRotasyonu = MotorSabitleri.TARET_MIN_ACI / (360.0 / MotorSabitleri.TARET_DISLI_ORANI);
+            double motorRotasyonu = aciToMotorRotasyonu(MotorSabitleri.TARET_MIN_ACI);
             taretEnkoderi.setPosition(motorRotasyonu);
         }
     }
@@ -98,11 +117,24 @@ public class TaretAltSistemi extends SubsystemBase {
         return 0.0;
     }
 
+    /**
+     * MAXMotion trapezoidal profil ile hedefe konumlan (yumusak hareket).
+     * Soft limitler ile ±90° disina cikamaz.
+     */
     public void aciAyarla(double hedefAci) {
-        double mevcutAci = getAci();
-        double hata = hedefAci - mevcutAci;
-        double hiz = hata * 0.01;
-        dondur(hiz);
+        if (pidKontrolcu != null) {
+            // Hedefe dogrudan SparkMax MAXMotion position control ile git
+            double hedefRotasyon = aciToMotorRotasyonu(hedefAci);
+            pidKontrolcu.setReference(hedefRotasyon, SparkBase.ControlType.kMAXMotionPositionControl);
+            // Hiz bilgisini tahmini olarak guncelle (gercek hiz enkoder ile izlenir)
+            double hata = hedefAci - getAci();
+            sonKomutHizi = Math.signum(hata) * Math.min(Math.abs(hata) * MotorSabitleri.TARET_POZ_KP, 1.0);
+        } else {
+            // Motor yoksa eski P kontrolu (sim / test)
+            double hata = hedefAci - getAci();
+            double hiz = hata * MotorSabitleri.TARET_POZ_KP;
+            dondur(hiz);
+        }
     }
 
     public double getSonKomutHizi() {

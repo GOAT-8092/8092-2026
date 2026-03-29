@@ -49,7 +49,13 @@ public final class Sabitler {
 
         // Poz tabanli taret takibi
         public static final double TARET_POZ_KP = 0.01;           // derece hata -> motor hizi
+        public static final double TARET_KI = 0.001;              // statik surunme hatasini giderir
         public static final double TARET_HIZALAMA_ESIGI_DERECE = 2.0;
+
+        // MAXMotion trapezoidal profil (SparkMax onboard)
+        public static final double TARET_MAXMOTION_CRUISE_RPM = 200.0;    // Motor cruise hizi (RPM)
+        public static final double TARET_MAXMOTION_ACCEL_RPM_S = 400.0;   // Motor ivme (RPM/s)
+        public static final double TARET_MAXMOTION_HATA_TOLERANSI = 0.1;  // Motor rotasyon hatasi
         public static final double TARET_ARKA_OFFSET_DERECE = 180.0; // taret arkaya bakiyor
 
         // Taret aci sinirlari (toplam 180 derece hareket alani)
