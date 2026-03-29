@@ -84,22 +84,6 @@
             }
           },
           {
-            "title": "Field Oriented",
-            "x": 896.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Drive/FieldOrientedEnabled",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
             "title": "Vision Tag ID",
             "x": 768.0,
             "y": 128.0,
@@ -108,58 +92,6 @@
             "type": "Text Display",
             "properties": {
               "topic": "/SmartDashboard/Drive/VisionTagID",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "FL Output",
-            "x": 1024.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Drive/FrontLeftOutput",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "FR Output",
-            "x": 1152.0,
-            "y": 0.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Drive/FrontRightOutput",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "RL Output",
-            "x": 1024.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Drive/RearLeftOutput",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "RR Output",
-            "x": 1152.0,
-            "y": 128.0,
-            "width": 128.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Drive/RearRightOutput",
               "period": 0.033,
               "show_submit_button": false
             }
@@ -179,7 +111,7 @@
           {
             "title": "Match Time",
             "x": 1024.0,
-            "y": 256.0,
+            "y": 0.0,
             "width": 256.0,
             "height": 128.0,
             "type": "Match Time",
@@ -189,6 +121,580 @@
               "time_display_mode": "Minutes and Seconds",
               "red_start_time": 15,
               "yellow_start_time": 30
+            }
+          },
+          {
+            "title": "FL Output",
+            "x": 1024.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/FrontLeftOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "FR Output",
+            "x": 1152.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/FrontRightOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RL Output",
+            "x": 1024.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/RearLeftOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RR Output",
+            "x": 1152.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Drive/RearRightOutput",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Atici Hazir",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/HizaUlasti",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Homing Tamam",
+            "x": 128.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/HomingTamamlandi",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Atis Modu",
+            "x": 256.0,
+            "y": 384.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/AtisModu",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Aktuel RPM",
+            "x": 640.0,
+            "y": 384.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/AktuelRPM",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Atici",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Atici Hazir",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/HizaUlasti",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Atis Modu",
+            "x": 128.0,
+            "y": 0.0,
+            "width": 384.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/AtisModu",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Homing Tamam",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/HomingTamamlandi",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Manuel Mod Secici",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/ManuelMod",
+              "period": 0.033,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Aktuel RPM",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/AktuelRPM",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Hedef RPM (PID)",
+            "x": 768.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/HedefRPM",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Hesaplanan RPM",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/HesaplananRPM",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Hedef Mesafe (m)",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Atici/HedefMesafe_m",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "RPM Ayar (Ayarlama)",
+            "x": 512.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Ayarlama/AticiRPM",
+              "period": 0.033,
+              "show_submit_button": true
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Kontrolcu",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Profil Secici",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 512.0,
+            "height": 128.0,
+            "type": "ComboBox Chooser",
+            "properties": {
+              "topic": "/SmartDashboard/Kontrolcu/Profil",
+              "period": 0.033,
+              "sort_options": false
+            }
+          },
+          {
+            "title": "Aktif Profil",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_AktifProfil",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Kontrolcu Bagli",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_KontrolcuBagli",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Eksen 0 (Sol X)",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Eksen0",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Eksen 1 (Sol Y)",
+            "x": 128.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Eksen1",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Eksen 2 (Sag X / PS4) / LT (Xbox)",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Eksen2",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Eksen 3 (RT Xbox)",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Eksen3",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Eksen 4 (L2 PS4 / Sag X Xbox)",
+            "x": 640.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Eksen4",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Eksen 5 (R2 PS4)",
+            "x": 896.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Eksen5",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Btn 1",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme1",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 2",
+            "x": 128.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme2",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 3",
+            "x": 256.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme3",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 4",
+            "x": 384.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme4",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 5",
+            "x": 512.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme5",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 6",
+            "x": 640.0,
+            "y": 256.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme6",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 7",
+            "x": 0.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme7",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 8",
+            "x": 128.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme8",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 9",
+            "x": 256.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme9",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 10",
+            "x": 384.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme10",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 11",
+            "x": 512.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme11",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Btn 12",
+            "x": 640.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_Dugme12",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4286611584,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "POV",
+            "x": 768.0,
+            "y": 384.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/SurucuIstasyonu_POV",
+              "period": 0.033,
+              "show_submit_button": false
             }
           }
         ]
@@ -381,6 +887,237 @@
       }
     },
     {
+      "name": "Turret",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Turret Angle",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Aci",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Target Angle",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/HedefAci",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Angle Error",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/AciHatasi",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Oto Mod",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/OtoMod",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Limit Switch",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/LimitSwitch",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Homing Tamam",
+            "x": 128.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/HomingTamamlandi",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Blk: Switch",
+            "x": 256.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Blok_LimitSwitch",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Blk: Min",
+            "x": 384.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Blok_MinLimit",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Blk: Max",
+            "x": 512.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Blok_MaksLimit",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Command Speed",
+            "x": 640.0,
+            "y": 128.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/KomutHizi",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Motor Cikisi",
+            "x": 0.0,
+            "y": 256.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/MotorCikisi",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Akim (A)",
+            "x": 192.0,
+            "y": 256.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Akim_A",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Sicaklik (C)",
+            "x": 384.0,
+            "y": 256.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Sicaklik_C",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Voltaj (V)",
+            "x": 576.0,
+            "y": 256.0,
+            "width": 192.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Voltaj_V",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Enkoder Rot.",
+            "x": 768.0,
+            "y": 256.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/EnkoderRotasyonu",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Taret Hizi",
+            "x": 896.0,
+            "y": 128.0,
+            "width": 128.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Ayarlama/TaretHizi",
+              "period": 0.033,
+              "show_submit_button": true
+            }
+          }
+        ]
+      }
+    },
+    {
       "name": "Auto",
       "grid_layout": {
         "layouts": [],
@@ -498,130 +1235,6 @@
               "robot_color": 4294198070,
               "trajectory_color": 4294967295,
               "show_robot_outside_widget": true
-            }
-          }
-        ]
-      }
-    },
-    {
-      "name": "Turret",
-      "grid_layout": {
-        "layouts": [],
-        "containers": [
-          {
-            "title": "Turret Angle",
-            "x": 0.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/Aci",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Target Angle",
-            "x": 256.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/HedefAci",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Angle Error",
-            "x": 512.0,
-            "y": 0.0,
-            "width": 256.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/AciHatasi",
-              "period": 0.033,
-              "show_submit_button": false
-            }
-          },
-          {
-            "title": "Limit Switch",
-            "x": 0.0,
-            "y": 128.0,
-            "width": 170.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/LimitSwitch",
-              "period": 0.033,
-              "true_color": 4283215696,
-              "false_color": 4294198070,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Blocked By Switch",
-            "x": 170.0,
-            "y": 128.0,
-            "width": 170.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/Blok_LimitSwitch",
-              "period": 0.033,
-              "true_color": 4294198070,
-              "false_color": 4283215696,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Min Limit",
-            "x": 340.0,
-            "y": 128.0,
-            "width": 170.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/Blok_MinLimit",
-              "period": 0.033,
-              "true_color": 4294198070,
-              "false_color": 4283215696,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Max Limit",
-            "x": 510.0,
-            "y": 128.0,
-            "width": 170.0,
-            "height": 128.0,
-            "type": "Boolean Box",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/Blok_MaksLimit",
-              "period": 0.033,
-              "true_color": 4294198070,
-              "false_color": 4283215696,
-              "true_icon": "None",
-              "false_icon": "None"
-            }
-          },
-          {
-            "title": "Command Speed",
-            "x": 680.0,
-            "y": 128.0,
-            "width": 200.0,
-            "height": 128.0,
-            "type": "Text Display",
-            "properties": {
-              "topic": "/SmartDashboard/Taret/KomutHizi",
-              "period": 0.033,
-              "show_submit_button": false
             }
           }
         ]
