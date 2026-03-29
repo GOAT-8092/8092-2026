@@ -19,8 +19,10 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import frc.robot.Commands.AprilTagTakipKomutu;
 import frc.robot.Commands.AprilTagaHizalamaKomutu;
 import frc.robot.Commands.OtomatikTaretKomutu;
+import frc.robot.Commands.OtonomYerdenAtisKomutu;
 import frc.robot.Commands.SurusKomutu;
 import frc.robot.Commands.TaretHomingKomutu;
+import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
 import frc.robot.Sabitler.*;
 import frc.robot.Subsystems.AlimAltSistemi;
 import frc.robot.Subsystems.AticiAltSistemi;
@@ -243,6 +245,7 @@ public class RobotKapsayici {
   // ── PathPlanner ───────────────────────────────────────────────────────────
 
   private void pathPlannerKomutlariniKaydet() {
+    // ── Temel yardımcı komutlar ──────────────────────────────────────────
     NamedCommands.registerCommand(
         "AprilTagHizala",
         new AprilTagaHizalamaKomutu(surusAltSistemi, gorusAltSistemi, 1, 1.0)
@@ -255,6 +258,28 @@ public class RobotKapsayici {
         "SurusuDurdur",
         new RunCommand(() -> surusAltSistemi.tumMotorlariDurdur(), surusAltSistemi)
             .withTimeout(0.1));
+
+    // ── Otonom: Yerden Ateş (tam sıralama) ──────────────────────────────
+    // Adım 1: Taret homing (max 3 s — limit switch yoksa timeout'ta devam et)
+    // Adım 2: AprilTag'lere kilitlen + mesafeye göre RPM spin-up + ateş (max 12 s)
+    NamedCommands.registerCommand(
+        "YerdenAtisTam",
+        new SequentialCommandGroup(
+            new TaretHomingKomutu(taretAltSistemi)
+                .withTimeout(3.0),
+            new OtonomYerdenAtisKomutu(
+                taretAltSistemi, aticiAltSistemi, alimAltSistemi, gorusAltSistemi)
+                .withTimeout(12.0)
+        )
+    );
+
+    // Parçalı kullanım için ayrı kayıt (PathPlanner içinde sürüşle birleştirilebilir)
+    NamedCommands.registerCommand(
+        "YerdenAtisSadece",
+        new OtonomYerdenAtisKomutu(
+            taretAltSistemi, aticiAltSistemi, alimAltSistemi, gorusAltSistemi)
+            .withTimeout(10.0)
+    );
   }
 
   private void otonomSeciciKur() {
