@@ -1,51 +1,67 @@
-# Robot-Yeni
+# GOAT #8092 Robot Kodu (2026)
 
-FRC robot yazilimi (Java + WPILib + GradleRIO) projesi.
+Bu repo, FRC Team **G.O.A.T. #8092** (Tekirdag) icin gelistirilen robot yazilimini icerir.
+Takim hakkinda: [8092.tr](https://www.8092.tr/)
 
-## Icerik
+## Takim Kimligi
+- Takim adi: Greatest of All Times (G.O.A.T.) #8092
+- Kurulus: 2019
+- Konum: Tekirdag / Cerkezkoy
+- Not: 8092.tr uzerindeki bilgilere gore Tekirdag'in ilk FRC takimi
+
+## Proje Ozeti
+- Dil ve altyapi: Java, WPILib Command-Based, GradleRIO
+- Surus: Mecanum
+- Mekanizma: alim, yukari tasiyici, atici, taret
+- Vision: Limelight + AprilTag
+
+## Klasor Yapisi
 - `src/main/java`: Robot kodu (alt sistemler, komutlar, sabitler)
-- `src/test/java`: Birim ve dogrulama testleri
-- `vendordeps`: Ucuncu parti bagimlilik tanimlari
-- `scripts`: Yardimci komut dosyalari
+- `src/test/java`: Birim/dogrulama testleri
+- `src/main/deploy`: Deploy edilen dashboard ve saha varliklari
+- `vendordeps`: Ucuncu parti kutuphane tanimlari
+- `scripts`: Yardimci scriptler
 
 ## Gereksinimler
-- Java 17 (WPILib ile uyumlu)
+- Java 17
+- WPILib gelistirme ortami
 - Git
-- WPILib gelistirme ortami (VS Code eklentileri dahil)
 
 ## Hizli Baslangic
-1. Depoyu klonlayin:
+1. Depoyu klonla:
    ```powershell
    git clone https://github.com/GOAT-8092/8092-2026.git
    cd 8092-2026
    ```
-2. Derleme:
+2. Derle:
    ```powershell
    .\gradlew.bat build
    ```
-3. Testleri calistirma:
+3. Test et:
    ```powershell
    .\gradlew.bat test
    ```
 
 ## Sik Kullanilan Komutlar
-- Tam kontrol (derleme + test): `.\gradlew.bat build`
-- Sadece test: `.\gradlew.bat test`
-- Robot kodu derleme: `.\gradlew.bat compileJava`
-- Bagimliliklari guncelleme/indirme: `.\gradlew.bat downloadDepsPreemptively`
+- `.\gradlew.bat build`: Derleme + test
+- `.\gradlew.bat test`: Sadece testler
+- `.\gradlew.bat compileJava`: Sadece Java derleme
+- `.\gradlew.bat deploy`: RoboRIO deploy
+- `.\gradlew.bat downloadDepsPreemptively`: Vendordep indirme
 
-## Dokumantasyon
-- [ROBOT_SETUP.md](ROBOT_SETUP.md)
-- [ROBOT_USER_GUIDE.md](ROBOT_USER_GUIDE.md)
-- [HARDWARE_VALIDATION.md](HARDWARE_VALIDATION.md)
-- [QUICK_REFERENCE.md](QUICK_REFERENCE.md)
-- [BUTTON_REFERENCE.md](BUTTON_REFERENCE.md)
-- [APRILTAG_TEST_PLAN.md](APRILTAG_TEST_PLAN.md)
-- [APRILTAG_ALIGN_TEST_GUIDE.md](APRILTAG_ALIGN_TEST_GUIDE.md)
+## Dokumanlar
+Bu dalda bulunan guncel Markdown dokumanlari:
+- [ROBOT.md](ROBOT.md): Donanim haritasi, kontrol semasi, test akisi
+- [TODO.md](TODO.md): Teknik takip ve capraz kontrol notlari
+- [AGENTS.md](AGENTS.md): Gelistirici asistan baglami
+- [CLAUDE.md](CLAUDE.md): Alternatif gelistirici asistan baglami
+- [WPILib-License.md](WPILib-License.md): Lisans metni
 
-## Notlar
-- Projede `gradlew.bat` kullanimi tercih edilir (Windows).
-- Yerel `main` daliniz `origin/main` gerisindeyse once guncelleyin:
+## Calisma Notlari
+- Windows ortaminda `gradlew.bat` kullan.
+- Local `main` geri kaldiginda:
   ```powershell
   git pull --ff-only
   ```
+- Surus disi motorlarin fiziksel aktivasyonu kod icindeki sabit ile kontrol edilir:
+  - `Sabitler.MotorSabitleri.SURUS_DISI_MOTORLARI_ETKIN`
