@@ -2,12 +2,19 @@ package frc.robot.Subsystems;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.hal.HAL;
 import frc.robot.Sabitler.ModulSabitleri;
 
 class MekanizmaAltSistemiTesti {
+    @BeforeEach
+    void setup() {
+        HAL.initialize(500, 0);
+    }
+
     @Test
     @Tag("fast")
     void alimSonKomutTakipEder() {

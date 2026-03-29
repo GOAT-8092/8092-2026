@@ -2,14 +2,21 @@ package frc.robot.Commands;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.hal.HAL;
 import frc.robot.Sabitler.ModulSabitleri;
 import frc.robot.Subsystems.AlimAltSistemi;
 import frc.robot.Subsystems.AticiAltSistemi;
 
 class AlimVeAtisKomutuTesti {
+    @BeforeEach
+    void setup() {
+        HAL.initialize(500, 0);
+    }
+
     @Test
     @Tag("fast")
     void alimKomutuMotorCiktisiniAyarlarVeDurdurur() {

@@ -29,9 +29,11 @@ class SurusKomutuTest {
     void executeSendsShapedCommandsToDriveOutput() {
         AtomicReference<double[]> outputs = new AtomicReference<>(new double[] {0, 0, 0});
         SubsystemBase req = new SubsystemBase() {};
+        // Axis 1 (yHizi) fiziksel olarak ileri = negatif deger uretir
+        // Axis 0 (xHizi) sag = pozitif; bu test: ileri + saga + sola donus
         SurusKomutu command = new SurusKomutu(
             () -> 0.4,
-            () -> 0.7,
+            () -> -0.7,
             () -> -0.2,
             (x, y, z) -> outputs.set(new double[] {x, y, z}),
             req
