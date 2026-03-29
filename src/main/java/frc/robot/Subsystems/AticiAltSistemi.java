@@ -21,6 +21,8 @@ public class AticiAltSistemi extends SubsystemBase {
     private double sonHedefRPM = 0.0;
 
     public AticiAltSistemi() {
+        SmartDashboard.setDefaultNumber("Ayarlama/AticiRPM", ModulSabitleri.ATICI_HEDEF_RPM);
+
         if (MotorSabitleri.SURUS_DISI_MOTORLARI_ETKIN) {
             aticiMotoru = new SparkMax(MotorSabitleri.ATICI_MOTOR_ID, MotorType.kBrushless);
             SparkMaxConfig yapilandirma = new SparkMaxConfig();
@@ -58,9 +60,9 @@ public class AticiAltSistemi extends SubsystemBase {
         }
     }
 
-    /** Varsayilan atici RPM ile at */
+    /** Varsayilan atici RPM ile at (Shuffleboard'dan ayarlanabilir) */
     public void at() {
-        atRPM(ModulSabitleri.ATICI_HEDEF_RPM);
+        atRPM(SmartDashboard.getNumber("Ayarlama/AticiRPM", ModulSabitleri.ATICI_HEDEF_RPM));
     }
 
     public void durdur() {

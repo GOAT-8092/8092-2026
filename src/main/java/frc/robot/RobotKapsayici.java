@@ -66,6 +66,7 @@ public class RobotKapsayici {
     taretAltSistemi = new TaretAltSistemi();
     alimAltSistemi = new AlimAltSistemi();
     aticiAltSistemi = new AticiAltSistemi();
+    SmartDashboard.setDefaultNumber("Ayarlama/TaretHizi", ModulSabitleri.TARET_HIZI);
     baglamalariYapilandir();
 
     // Not: PS4 kontrolcusu USB ile bagli olmali ve Driver Station'da gorunmelidir.
@@ -220,12 +221,12 @@ public class RobotKapsayici {
 
     // 5 (L1): Taret sola (CAN 6)
     new JoystickButton(surucuKontrolcusu, 5)
-        .whileTrue(new RunCommand(() -> taretAltSistemi.dondur(-ModulSabitleri.TARET_HIZI), taretAltSistemi))
+        .whileTrue(new RunCommand(() -> taretAltSistemi.dondur(-SmartDashboard.getNumber("Ayarlama/TaretHizi", ModulSabitleri.TARET_HIZI)), taretAltSistemi))
         .onFalse(new InstantCommand(() -> taretAltSistemi.durdur(), taretAltSistemi));
 
     // 6 (R1): Taret saga (CAN 6)
     new JoystickButton(surucuKontrolcusu, 6)
-        .whileTrue(new RunCommand(() -> taretAltSistemi.dondur(ModulSabitleri.TARET_HIZI), taretAltSistemi))
+        .whileTrue(new RunCommand(() -> taretAltSistemi.dondur(SmartDashboard.getNumber("Ayarlama/TaretHizi", ModulSabitleri.TARET_HIZI)), taretAltSistemi))
         .onFalse(new InstantCommand(() -> taretAltSistemi.durdur(), taretAltSistemi));
 
     // 10 (Secenekler): Atici hemen baslar, 1sn sonra yukari tasiyici baslar.

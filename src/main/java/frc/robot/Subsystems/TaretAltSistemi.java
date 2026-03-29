@@ -20,8 +20,9 @@ public class TaretAltSistemi extends SubsystemBase {
     private SparkClosedLoopController pidKontrolcu;
     private RelativeEncoder taretEnkoderi;
     private double sonKomutHizi = 0.0;
+    private double hedefAci = 0.0;
 
-    // Normally closed: get() == true → normal, get() == false → switch tetiklendi
+    // NC switch + Signal/GND: basili degil=false (kapali devre/GND), basili=true (acik devre/pull-up)
     private final DigitalInput limitSwitch;
 
     public TaretAltSistemi() {
@@ -123,8 +124,8 @@ public class TaretAltSistemi extends SubsystemBase {
      * Soft limitler ile ±90° disina cikamaz.
      */
     public void aciAyarla(double hedefAci) {
+        this.hedefAci = hedefAci;
         if (pidKontrolcu != null) {
-            // Hedefe dogrudan SparkMax MAXMotion position control ile git
             double hedefRotasyon = aciToMotorRotasyonu(hedefAci);
             pidKontrolcu.setReference(hedefRotasyon, SparkBase.ControlType.kMAXMotionPositionControl);
             // Hiz bilgisini tahmini olarak guncelle (gercek hiz enkoder ile izlenir)
@@ -147,14 +148,28 @@ public class TaretAltSistemi extends SubsystemBase {
         double aci = getAci();
         boolean switchTetik = limitSwitchTetiklendi();
 
+        // Pozisyon ve hedef
         SmartDashboard.putNumber("Taret/Aci", aci);
-        SmartDashboard.putBoolean("Taret/LimitSwitch", switchTetik);
-        SmartDashboard.putNumber("Taret/Motor", sonKomutHizi);
+        SmartDashboard.putNumber("Taret/HedefAci", hedefAci);
+        SmartDashboard.putNumber("Taret/AciHatasi", hedefAci - aci);
+        if (taretEnkoderi != null) {
+            SmartDashboard.putNumber("Taret/EnkoderRotasyonu", taretEnkoderi.getPosition());
+        }
 
-        // Blok nedeni — L1 neden dönmüyor sorununu teşhis eder
+        // Limit switch ve blokaj
+        SmartDashboard.putBoolean("Taret/LimitSwitch", switchTetik);
         SmartDashboard.putBoolean("Taret/Blok_LimitSwitch", sonKomutHizi == 0 && switchTetik);
         SmartDashboard.putBoolean("Taret/Blok_MinLimit",    aci <= MotorSabitleri.TARET_MIN_ACI);
         SmartDashboard.putBoolean("Taret/Blok_MaksLimit",   aci >= MotorSabitleri.TARET_MAKS_ACI);
+
+        // Motor cikisi
+        SmartDashboard.putNumber("Taret/KomutHizi", sonKomutHizi);
+        if (taretMotoru != null) {
+            SmartDashboard.putNumber("Taret/MotorCikisi", taretMotoru.getAppliedOutput());
+            SmartDashboard.putNumber("Taret/Akim_A", taretMotoru.getOutputCurrent());
+            SmartDashboard.putNumber("Taret/Sicaklik_C", taretMotoru.getMotorTemperature());
+            SmartDashboard.putNumber("Taret/Voltaj_V", taretMotoru.getBusVoltage());
+        }
     }
 
     /** DIO ve CAN kaynaklarini serbest birakir — test ortaminda @AfterAll ile cagrilmali */
