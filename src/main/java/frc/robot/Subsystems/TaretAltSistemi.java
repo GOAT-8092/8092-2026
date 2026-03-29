@@ -7,6 +7,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.wpilibj.DigitalInput;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Sabitler.MotorSabitleri;
 
@@ -91,6 +92,21 @@ public class TaretAltSistemi extends SubsystemBase {
 
     public double getSonKomutHizi() {
         return sonKomutHizi;
+    }
+
+    @Override
+    public void periodic() {
+        double aci = getAci();
+        boolean switchTetik = limitSwitchTetiklendi();
+
+        SmartDashboard.putNumber("Taret/Aci", aci);
+        SmartDashboard.putBoolean("Taret/LimitSwitch", switchTetik);
+        SmartDashboard.putNumber("Taret/Motor", sonKomutHizi);
+
+        // Blok nedeni — L1 neden dönmüyor sorununu teşhis eder
+        SmartDashboard.putBoolean("Taret/Blok_LimitSwitch", sonKomutHizi == 0 && switchTetik);
+        SmartDashboard.putBoolean("Taret/Blok_MinLimit",    aci <= MotorSabitleri.TARET_MIN_ACI);
+        SmartDashboard.putBoolean("Taret/Blok_MaksLimit",   aci >= MotorSabitleri.TARET_MAKS_ACI);
     }
 
     /** DIO ve CAN kaynaklarini serbest birakir — test ortaminda @AfterAll ile cagrilmali */
