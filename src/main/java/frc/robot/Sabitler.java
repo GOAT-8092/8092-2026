@@ -59,7 +59,8 @@ public final class Sabitler {
         // Taret limit switch (homing icin, normally closed)
         public static final int TARET_LIMIT_SWITCH_DIO = 9;
         // Homing sirasinda tareti limit switch'e dogru dondurmek icin hiz
-        public static final double TARET_HOMING_HIZI = -0.1;
+        // Manuel hizla esit (TARET_HIZI = 0.04), negatif = sol yön (limit switch tarafi)
+        public static final double TARET_HOMING_HIZI = -0.04;
     }
 
     public static class SurusSabitleri {
