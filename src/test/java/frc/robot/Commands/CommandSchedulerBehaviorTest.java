@@ -3,14 +3,21 @@ package frc.robot.Commands;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
 class CommandSchedulerBehaviorTest {
+    @BeforeAll
+    static void halBaslat() {
+        HAL.initialize(500, 0);
+    }
+
     private static class TestSubsystem extends SubsystemBase {}
 
     private static class EndlessCommand extends Command {
