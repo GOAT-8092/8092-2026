@@ -3,25 +3,25 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj.GenericHID;
 
 /**
- * PS4 kontrolcüsü — Axis 4/5 YOK (eski kol veya analog trigger eksik model).
- * Spin-up ve ateş L2/R2 dijital butonlara taşınmıştır.
+ * PS4 controller profile where Axis 4/5 are not available.
+ * Spin-up and fire are mapped to digital L2/R2 buttons.
  *
- * Eksen haritası:
- *   0 = Sol X (yanal)
- *   1 = Sol Y (ileri/geri)
- *   2 = Sağ X (dönüş)
+ * Axis mapping:
+ *   0 = Left X (strafe)
+ *   1 = Left Y (forward/back)
+ *   2 = Right X (turn)
  *
- * Buton haritası:
- *   1 = ■ Kare    → alım
- *   2 = ✕ Çarpı   → geri at
- *   3 = ● Daire   → taşıyıcı ters unjam (0.5 s)
- *   4 = ▲ Üçgen   → taret homing  (L2 dijital serbest kaldığından buraya)
- *   5 = L1        → taret sola (fallback)
- *   6 = R1        → taret sağa (fallback)
- *   7 = L2 dijital → atıcı spin-up
- *   8 = R2 dijital → ateş (RobotKapsayici'de kilitle birleşir)
- *   9 = Share     → taşıyıcı yukarı manuel
- *  10 = Options   → gyro sıfırla
+ * Button mapping:
+ *   1 = Square    -> intake
+ *   2 = Cross     -> reverse intake
+ *   3 = Circle    -> conveyor reverse unjam (0.5 s)
+ *   4 = Triangle  -> turret homing
+ *   5 = L1        -> turret left (fallback)
+ *   6 = R1        -> turret right (fallback)
+ *   7 = L2 digital -> shooter spin-up
+ *   8 = R2 digital -> fire
+ *   9 = Share     -> manual conveyor up
+ *  10 = Options   -> gyro reset
  */
 public class PS4BasitProfili extends KontrolcuProfili {
 
@@ -29,14 +29,14 @@ public class PS4BasitProfili extends KontrolcuProfili {
     private static final int SOL_Y_EKSEN    = 1;
     private static final int SAG_X_EKSEN    = 2;
 
-    private static final int ALIM_BTN       = 1;   // ■
-    private static final int GERI_AT_BTN    = 2;   // ✕
-    private static final int UNJAM_BTN      = 3;   // ●
-    private static final int HOMING_BTN     = 4;   // ▲
+    private static final int ALIM_BTN       = 1;   // Square
+    private static final int GERI_AT_BTN    = 2;   // Cross
+    private static final int UNJAM_BTN      = 3;   // Circle
+    private static final int HOMING_BTN     = 4;   // Triangle
     private static final int TARET_SOL_BTN  = 5;   // L1
     private static final int TARET_SAG_BTN  = 6;   // R1
-    private static final int SPINUP_BTN     = 7;   // L2 dijital
-    private static final int ATES_BTN       = 8;   // R2 dijital
+    private static final int SPINUP_BTN     = 7;   // L2 digital
+    private static final int ATES_BTN       = 8;   // R2 digital
     private static final int TASIYICI_BTN   = 9;   // Share
     private static final int GYRO_RESET_BTN = 10;  // Options
 

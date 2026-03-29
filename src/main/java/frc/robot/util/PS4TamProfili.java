@@ -3,27 +3,27 @@ package frc.robot.util;
 import edu.wpi.first.wpilibj.GenericHID;
 
 /**
- * PS4 kontrolcüsü — Axis 4 (L2 analog) ve Axis 5 (R2 analog) mevcut.
+ * PS4 controller profile where Axis 4 (L2 analog) and Axis 5 (R2 analog) exist.
  *
- * Eksen haritası:
- *   0 = Sol X (yanal)
- *   1 = Sol Y (ileri/geri)
- *   2 = Sağ X (dönüş)
- *   3 = Sağ Y
- *   4 = L2 analog (0→1)  → atıcı spin-up
- *   5 = R2 analog (0→1)  → ateş (RobotKapsayici'de kilitle birleşir)
+ * Axis mapping:
+ *   0 = Left X (strafe)
+ *   1 = Left Y (forward/back)
+ *   2 = Right X (turn)
+ *   3 = Right Y
+ *   4 = L2 analog (0->1) -> shooter spin-up
+ *   5 = R2 analog (0->1) -> fire
  *
- * Buton haritası (WPILib PS4 numaralandırması):
- *   1 = ■ Kare    → alım
- *   2 = ✕ Çarpı   → geri at
- *   3 = ● Daire   → taşıyıcı ters unjam (0.5 s)
- *   4 = ▲ Üçgen   → taşıyıcı yukarı manuel
- *   5 = L1        → taret sola (fallback)
- *   6 = R1        → taret sağa (fallback)
- *   7 = L2 dijital → taret homing
- *   8 = R2 dijital → gyro sıfırla
- *   9 = Share     → yedek
- *  10 = Options   → yedek
+ * Button mapping (WPILib PS4 numbering):
+ *   1 = Square    -> intake
+ *   2 = Cross     -> reverse intake
+ *   3 = Circle    -> conveyor reverse unjam (0.5 s)
+ *   4 = Triangle  -> manual conveyor up
+ *   5 = L1        -> turret left (fallback)
+ *   6 = R1        -> turret right (fallback)
+ *   7 = L2 digital -> turret homing
+ *   8 = R2 digital -> gyro reset
+ *   9 = Share     -> spare
+ *  10 = Options   -> spare
  */
 public class PS4TamProfili extends KontrolcuProfili {
 
@@ -34,14 +34,14 @@ public class PS4TamProfili extends KontrolcuProfili {
     private static final int R2_ANALOG_EKSEN   = 5;
     private static final double ANALOG_ESIK    = 0.1;
 
-    private static final int ALIM_BTN          = 1;  // ■
-    private static final int GERI_AT_BTN       = 2;  // ✕
-    private static final int UNJAM_BTN         = 3;  // ●
-    private static final int TASIYICI_BTN      = 4;  // ▲
+    private static final int ALIM_BTN          = 1;  // Square
+    private static final int GERI_AT_BTN       = 2;  // Cross
+    private static final int UNJAM_BTN         = 3;  // Circle
+    private static final int TASIYICI_BTN      = 4;  // Triangle
     private static final int TARET_SOL_BTN     = 5;  // L1
     private static final int TARET_SAG_BTN     = 6;  // R1
-    private static final int HOMING_BTN        = 7;  // L2 dijital
-    private static final int GYRO_RESET_BTN    = 8;  // R2 dijital
+    private static final int HOMING_BTN        = 7;  // L2 digital
+    private static final int GYRO_RESET_BTN    = 8;  // R2 digital
 
     public PS4TamProfili(GenericHID hid) {
         super(hid);
