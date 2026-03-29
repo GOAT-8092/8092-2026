@@ -38,7 +38,7 @@ class SurusKomutuTest {
         AtomicReference<double[]> outputs = new AtomicReference<>(new double[] {0, 0, 0});
         SubsystemBase req = new SubsystemBase() {};
         // Axis 1 (yHizi) fiziksel olarak ileri = negatif deger uretir; execute() icinde -hamX ile terslenip pozitif x uretir.
-        // Axis 0 (xHizi) sag = pozitif; execute() icinde hamY olarak kullanilir (negasyon yok), pozitif y uretir.
+        // Axis 0 (xHizi) sag = pozitif; WPILib'de +y sol oldugu icin -hamY ile terslenir, negatif y uretir.
         // Axis 2 (zDonusu) eksi = sola donus; hamZ olarak kullanilir, negatif z uretir.
         SurusKomutu command = new SurusKomutu(
             () -> 0.4,
@@ -54,7 +54,7 @@ class SurusKomutuTest {
         double[] out = outputs.get();
 
         assertTrue(out[0] > 0.0);
-        assertTrue(out[1] > 0.0);
+        assertTrue(out[1] < 0.0);
         assertTrue(out[2] < 0.0);
     }
 }

@@ -502,6 +502,190 @@
           }
         ]
       }
+    },
+    {
+      "name": "Turret",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Turret Angle",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Aci",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Target Angle",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/HedefAci",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Angle Error",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/AciHatasi",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          },
+          {
+            "title": "Limit Switch",
+            "x": 0.0,
+            "y": 128.0,
+            "width": 170.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/LimitSwitch",
+              "period": 0.033,
+              "true_color": 4283215696,
+              "false_color": 4294198070,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Blocked By Switch",
+            "x": 170.0,
+            "y": 128.0,
+            "width": 170.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Blok_LimitSwitch",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Min Limit",
+            "x": 340.0,
+            "y": 128.0,
+            "width": 170.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Blok_MinLimit",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Max Limit",
+            "x": 510.0,
+            "y": 128.0,
+            "width": 170.0,
+            "height": 128.0,
+            "type": "Boolean Box",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/Blok_MaksLimit",
+              "period": 0.033,
+              "true_color": 4294198070,
+              "false_color": 4283215696,
+              "true_icon": "None",
+              "false_icon": "None"
+            }
+          },
+          {
+            "title": "Command Speed",
+            "x": 680.0,
+            "y": 128.0,
+            "width": 200.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Taret/KomutHizi",
+              "period": 0.033,
+              "show_submit_button": false
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "Ayarlama",
+      "grid_layout": {
+        "layouts": [],
+        "containers": [
+          {
+            "title": "Intake Speed",
+            "x": 0.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Ayarlama/AlimHizi",
+              "period": 0.033,
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "Conveyor Speed",
+            "x": 256.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Ayarlama/TasiyiciHizi",
+              "period": 0.033,
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "Shooter RPM",
+            "x": 512.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Ayarlama/AticiRPM",
+              "period": 0.033,
+              "show_submit_button": true
+            }
+          },
+          {
+            "title": "Turret Speed",
+            "x": 768.0,
+            "y": 0.0,
+            "width": 256.0,
+            "height": 128.0,
+            "type": "Text Display",
+            "properties": {
+              "topic": "/SmartDashboard/Ayarlama/TaretHizi",
+              "period": 0.033,
+              "show_submit_button": true
+            }
+          }
+        ]
+      }
     }
   ]
 }

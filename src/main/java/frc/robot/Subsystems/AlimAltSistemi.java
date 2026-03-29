@@ -13,9 +13,9 @@ public class AlimAltSistemi extends SubsystemBase {
     private double sonTasiyiciHizi = 0.0;
 
     public AlimAltSistemi() {
-        // Shuffleboard'da Ayarlama tab'inda gorunur
-        SmartDashboard.setDefaultNumber("Ayarlama/AlimHizi", ModulSabitleri.ALIM_HIZI);
-        SmartDashboard.setDefaultNumber("Ayarlama/TasiyiciHizi", ModulSabitleri.DEPO_ATICI_YUKARI_TASIYICI_HIZI);
+        // Ayar alanlarini acikca publish et; bazi dashboard'lar default entry'leri gostermiyor.
+        SmartDashboard.putNumber("Ayarlama/AlimHizi", ModulSabitleri.ALIM_HIZI);
+        SmartDashboard.putNumber("Ayarlama/TasiyiciHizi", ModulSabitleri.DEPO_ATICI_YUKARI_TASIYICI_HIZI);
 
         if (MotorSabitleri.SURUS_DISI_MOTORLARI_ETKIN) {
             alimCimMotoru = new PWMSparkMax(MotorSabitleri.ALIM_CIM_PWM_KANALI);
