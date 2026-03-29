@@ -532,7 +532,7 @@ public class SurusAltSistemi extends SubsystemBase {
   SmartDashboard.putNumber("Robot/BataryaVolt", RobotController.getBatteryVoltage());
   SmartDashboard.putBoolean("Robot/NavXBagli", RobotBase.isReal() && navx != null && navx.isConnected());
   SmartDashboard.putBoolean("Robot/NavXKalibre", RobotBase.isReal() && navx != null && !navx.isCalibrating());
-  SmartDashboard.putNumber("Robot/NavXYaw", RobotBase.isReal() && navx != null ? navx.getYaw() : simulatedHeading);
+  SmartDashboard.putNumber("Robot/NavXYaw", RobotBase.isReal() && navx != null ? -navx.getYaw() : simulatedHeading);
 
   // Read motor test toggles from SmartDashboard and schedule/cancel commands
   boolean flToggle = SmartDashboard.getBoolean("MotorTest/FrontLeft", false);
@@ -576,7 +576,8 @@ public class SurusAltSistemi extends SubsystemBase {
 
   public Rotation2d getHeading() {
     if (RobotBase.isReal() && navx != null) {
-      return Rotation2d.fromDegrees(navx.getYaw());
+      // NavX CW-pozitif, WPILib CCW-pozitif kullanir — negatif almak zorunlu
+      return Rotation2d.fromDegrees(-navx.getYaw());
     } else {
       // Simulation - return simulated heading
       return Rotation2d.fromDegrees(simulatedHeading);
