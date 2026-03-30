@@ -48,9 +48,9 @@ public final class Sabitler {
         // Taret disli orani: 200T ring / 19T pinion = ~10.526:1
         public static final double TARET_DISLI_ORANI = 200.0 / 19.0;
 
-        // Poz tabanli taret takibi,
-        public static final double TARET_POZ_KP = 0.01;           // derece hata -> motor hizi
-        public static final double TARET_KI = 0.001;              // statik surunme hatasini giderir
+        // Poz tabanli taret takibi - DEVRE DISI (sadece manuel kontrol)
+        public static final double TARET_POZ_KP = 0.0;            // derece hata -> motor hizi (0 = otomatik kapali)
+        public static final double TARET_KI = 0.0;               // statik surunme hatasini giderir
         public static final double TARET_HIZALAMA_ESIGI_DERECE = 2.0;
 
         // MAXMotion trapezoidal profil (SparkMax onboard)
@@ -185,17 +185,29 @@ public final class Sabitler {
     public static class ModulSabitleri {
         public static final double ALIM_HIZI = 0.75;
         public static final double DEPO_ATICI_YUKARI_TASIYICI_HIZI = 0.75;
-        public static final double ATICI_HIZI = 1;
+        public static final double ATICI_HIZI = 0.90;
+        public static final double ATICI_MIN_RPM = 2600.0;
+        public static final double ATICI_MAKS_RPM = 5400.0;
+        public static final double ATICI_MAKS_CIKIS = 0.90;
         public static final double ATICI_HEDEF_RPM = 4000.0; // Velocity PID hedef hizi (NEO max: 5676 RPM)
+
+        // 3 mesafe için atış RPM değerleri (Elastic Dashboard'dan değiştirilebilir)
+        // SAHA TESTI ile kalibre edildi: 5200 RPM → 2.8m atış başarılı
+        public static double YAKIN_ATIS_RPM = 3800.0;  // ~1.2 m
+        public static double ORTA_ATIS_RPM  = 5200.0;  // ~2.8 m (test edilmiş değer)
+        public static double UZAK_ATIS_RPM  = 5400.0;  // ~4.4 m (stabilite icin limitli)
+        public static final double YAKIN_ATIS_HIZI = YAKIN_ATIS_RPM / 5676.0;
+        public static final double ORTA_ATIS_HIZI  = ORTA_ATIS_RPM / 5676.0;
+        public static final double UZAK_ATIS_HIZI  = UZAK_ATIS_RPM / 5676.0;
         /**
          * Mesafe→RPM kalibasyon tablosu.
-         * am-5780_CN fizik formülünden türetildi (verimlilik=0.55, açı=45°, h_L=0.70m, h_T=1.143m).
-         * SAHA TESTİNDE ince ayar yapılmalıdır — AtisHesaplayici.rpmToMenzil() ile çapraz kontrol et.
+         * SAHA TESTI ile güncellendi: 5200 RPM → 2.8m atış başarılı.
+         * Not: NEO motor maksimum RPM = 5676
          */
         public static final double[] ATIS_MESAFE_TABLOSU_METRE =
             {1.2,  2.0,  2.8,  3.6,  4.4,  5.2};
         public static final double[] ATIS_RPM_TABLOSU =
-            {2750, 3240, 3700, 4110, 4490, 4860};
+            {3800, 4500, 5200, 5350, 5400, 5400};
         public static final double ATICI_KP = 0.0001;        // Velocity PID P kazanci (REV resmi)
         public static final double ATICI_KV = 12.0 / 5676.0; // Feedforward: 12V / NEO max RPM
         public static final double TARET_HIZI = 0.08;
@@ -205,15 +217,15 @@ public final class Sabitler {
      * Limelight hedef görmediğinde sürücünün Elastic'ten seçebileceği
      * manuel atış mesafe ön ayarları.
      *
-     * RPM değerleri ATIS_RPM_TABLOSU kalibrasyonundan türetilmiştir:
-     *   YAKIN  → ~1.2 m  → 2900 RPM
-     *   ORTA   → ~2.8 m  → 3700 RPM
-     *   UZAK   → ~4.4 m  → 4450 RPM
+     * RPM değerleri SAHA TESTI ile kalibre edildi (5200 RPM → 2.8m başarılı):
+     *   YAKIN  → ~1.2 m  → 3800 RPM
+     *   ORTA   → ~2.8 m  → 5200 RPM
+     *   UZAK   → ~4.4 m  → 5500 RPM (NEO max: 5676)
      */
     public enum ManuelAtisModu {
-        YAKIN ("Yakın  (~1.2 m)",  2750.0),
-        ORTA  ("Orta   (~2.8 m)",  3700.0),
-        UZAK  ("Uzak   (~4.4 m)",  4490.0);
+        YAKIN ("Yakın  (~1.2 m)",  3800.0),
+        ORTA  ("Orta   (~2.8 m)",  5200.0),
+        UZAK  ("Uzak   (~4.4 m)",  5400.0);
 
         public final String etiket;
         public final double rpm;

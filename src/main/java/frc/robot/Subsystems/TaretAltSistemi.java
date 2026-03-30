@@ -48,8 +48,10 @@ public class TaretAltSistemi extends SubsystemBase {
 
             // SparkMax donanim soft limitleri DEVRE DISI - sadece limit switch korur
             yapilandirma.softLimit
-                .forwardSoftLimitEnabled(false)
-                .reverseSoftLimitEnabled(false);
+                .forwardSoftLimit(aciToMotorRotasyonu(MotorSabitleri.TARET_MAKS_ACI))
+                .reverseSoftLimit(aciToMotorRotasyonu(MotorSabitleri.TARET_MIN_ACI))
+                .forwardSoftLimitEnabled(true)
+                .reverseSoftLimitEnabled(true);
 
             // MAXMotion trapezoidal profil (3.2) + kI surme hatasi giderici (3.4)
             yapilandirma.closedLoop
@@ -120,9 +122,11 @@ public class TaretAltSistemi extends SubsystemBase {
 
     /** Manuel taret surusu: limit switch basiliyken sola durur,aksi yok. */
     public void dondurManuel(double hiz) {
+        double aci = getAci();
+        boolean maksimumda = aci >= MotorSabitleri.TARET_MAKS_ACI && hiz > 0;
         // Sola hareket sadece limit switch basiliyken durur
         boolean limitSwitchYonunde = hiz < 0 && limitSwitchTetiklendi();
-        if (limitSwitchYonunde) {
+        if (maksimumda || limitSwitchYonunde) {
             hiz = 0;
         }
 
@@ -148,23 +152,12 @@ public class TaretAltSistemi extends SubsystemBase {
     }
 
     /**
-     * MAXMotion trapezoidal profil ile hedefe konumlan (yumusak hareket).
-     * Soft limitler ile ±90° disina cikamaz.
+     * MAXMotion trapezoidal profil ile hedefe konumlan - DEVRE DISI.
+     * Sadece manuel kontrol aktif.
      */
     public void aciAyarla(double hedefAci) {
-        this.hedefAci = hedefAci;
-        if (pidKontrolcu != null) {
-            double hedefRotasyon = aciToMotorRotasyonu(hedefAci);
-            pidKontrolcu.setSetpoint(hedefRotasyon, SparkBase.ControlType.kMAXMotionPositionControl, ClosedLoopSlot.kSlot0);
-            // Hiz bilgisini tahmini olarak guncelle (gercek hiz enkoder ile izlenir)
-            double hata = hedefAci - getAci();
-            sonKomutHizi = Math.signum(hata) * Math.min(Math.abs(hata) * MotorSabitleri.TARET_POZ_KP, 1.0);
-        } else {
-            // Motor yoksa eski P kontrolu (sim / test)
-            double hata = hedefAci - getAci();
-            double hiz = hata * MotorSabitleri.TARET_POZ_KP;
-            dondur(hiz);
-        }
+        // Otomatik pozisyon kontrolu kapali - sadece manuel kontrol aktif
+        // Bu metot artik etkisiz
     }
 
     public double getSonKomutHizi() {

@@ -9,18 +9,18 @@ class AtisHesaplayiciTest {
     @Test
     @Tag("fast")
     void belowTableUsesFirstValue() {
-        assertEquals(2900.0, AtisHesaplayici.hesaplaHedefRpm(0.8), 1e-9);
+        assertEquals(3800.0, AtisHesaplayici.hesaplaHedefRpm(0.8), 1e-9);
     }
 
     @Test
     @Tag("fast")
     void aboveTableUsesLastValue() {
-        assertEquals(4800.0, AtisHesaplayici.hesaplaHedefRpm(6.5), 1e-9);
+        assertEquals(5400.0, AtisHesaplayici.hesaplaHedefRpm(6.5), 1e-9);
     }
 
     @Test
     @Tag("fast")
     void interpolatesBetweenPoints() {
-        assertEquals(3500.0, AtisHesaplayici.hesaplaHedefRpm(2.4), 1e-9);
+        assertEquals(4850.0, AtisHesaplayici.hesaplaHedefRpm(2.4), 1e-9);
     }
 }

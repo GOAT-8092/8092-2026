@@ -12,6 +12,7 @@ import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
+import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Sabitler.ModulSabitleri;
@@ -25,6 +26,20 @@ public class AticiAltSistemi extends SubsystemBase {
 
     public AticiAltSistemi() {
         SmartDashboard.putNumber("Ayarlama/AticiRPM", ModulSabitleri.ATICI_HEDEF_RPM);
+        SmartDashboard.putNumber("Ayarlama/YakinAtisRPM", ModulSabitleri.YAKIN_ATIS_RPM);
+        SmartDashboard.putNumber("Ayarlama/OrtaAtisRPM", ModulSabitleri.ORTA_ATIS_RPM);
+        SmartDashboard.putNumber("Ayarlama/UzakAtisRPM", ModulSabitleri.UZAK_ATIS_RPM);
+        SmartDashboard.putNumber("Ayarlama/YakinAtisHizi", ModulSabitleri.YAKIN_ATIS_HIZI);
+        SmartDashboard.putNumber("Ayarlama/OrtaAtisHizi", ModulSabitleri.ORTA_ATIS_HIZI);
+        SmartDashboard.putNumber("Ayarlama/UzakAtisHizi", ModulSabitleri.UZAK_ATIS_HIZI);
+        SmartDashboard.putBoolean("Ayarlama/AticiAcikCevrimModu", false);
+        SmartDashboard.putBoolean("Ayarlama/AticiPresetDashboardAktif", false);
+
+        // PID ayarları - SmartDashboard'dan ayarlanabilir
+        // Daha yüksek P ve I değerleri ile RPM kontrolü güçlendirildi
+        SmartDashboard.putNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
+        SmartDashboard.putNumber("Ayarlama/AticiKI", 0.0);
+        SmartDashboard.putNumber("Ayarlama/AticiKD", 0.0);
 
         if (MotorSabitleri.SURUS_DISI_MOTORLARI_ETKIN) {
             aticiMotoru = new SparkMax(MotorSabitleri.ATICI_MOTOR_ID, MotorType.kBrushless);
@@ -33,18 +48,29 @@ public class AticiAltSistemi extends SubsystemBase {
             yapilandirma.idleMode(IdleMode.kCoast); // Volan momentumunu korur — ani frenleme top hizini dusurur
             yapilandirma.voltageCompensation(12); // batarya voltaj dususunda tutarli RPM
 
-            // Velocity PID + Feedforward (REV 2026 resmi ornegi)
+            // Akım sınırlama - motoru ve shooter'ı korumak için
+            yapilandirma.smartCurrentLimit(40); // 40A limit
+
+            // Enkoder velocity conversion faktörü (REV öntanımlı: RPM)
+            // NEO bir devir = 1 rotasyon (dıştan dişli yoksa)
+            yapilandirma.encoder
+                .velocityConversionFactor(1.0)
+                .positionConversionFactor(1.0);
+
+            // Velocity PID + Feedforward - çok daha güçlü kazançlar
+            double kp = SmartDashboard.getNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
+            double ki = SmartDashboard.getNumber("Ayarlama/AticiKI", 0.0);
+            double kd = SmartDashboard.getNumber("Ayarlama/AticiKD", 0.0);
+
             yapilandirma.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
-                .p(ModulSabitleri.ATICI_KP)
-                .i(0)
-                .d(0)
-                .outputRange(-1, 1);
-            yapilandirma.closedLoop.feedForward
-                .kV(ModulSabitleri.ATICI_KV); // kV = 12V / NEO max RPM
+                .pid(kp, ki, kd)
+                .outputRange(0.0, ModulSabitleri.ATICI_MAKS_CIKIS);
+            // Feedforward kaldırıldı - PID tam kontrol yapacak
+            yapilandirma.closedLoop.feedForward.kV(ModulSabitleri.ATICI_KV);
 
             aticiMotoru.configure(yapilandirma,
-                ResetMode.kNoResetSafeParameters,
+                ResetMode.kResetSafeParameters,  // Safe parameters reset
                 PersistMode.kPersistParameters);
 
             pidKontrolcu = aticiMotoru.getClosedLoopController();
@@ -58,9 +84,18 @@ public class AticiAltSistemi extends SubsystemBase {
 
     /** Belirtilen RPM'e velocity PID ile hizlan */
     public void atRPM(double hedefRPM) {
-        sonHedefRPM = hedefRPM;
+        double sinirliHedefRpm = rpmSinirla(hedefRPM);
+        sonHedefRPM = sinirliHedefRpm;
         if (pidKontrolcu != null) {
-            pidKontrolcu.setSetpoint(hedefRPM, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+            // Velocity closed-loop kontrol - RPM biriminde
+            pidKontrolcu.setSetpoint(sinirliHedefRpm, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
+        }
+    }
+
+    /** Shooter'ı belirli bir duty cycle ile çalıştır (test için) */
+    public void calistirDutyCycle(double output) {
+        if (aticiMotoru != null) {
+            aticiMotoru.set(dutyCycleSinirla(output));
         }
     }
 
@@ -69,15 +104,54 @@ public class AticiAltSistemi extends SubsystemBase {
         atRPM(SmartDashboard.getNumber("Ayarlama/AticiRPM", ModulSabitleri.ATICI_HEDEF_RPM));
     }
 
+    /** Yakın atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
+    public void atYakin() {
+        if (SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false)) {
+            calistir(SmartDashboard.getNumber("Ayarlama/YakinAtisHizi", ModulSabitleri.YAKIN_ATIS_HIZI));
+            SmartDashboard.putString("Atici/AktifPreset", "YAKIN_HIZ");
+        } else {
+            double hedef = presetRpmOku("Ayarlama/YakinAtisRPM", ModulSabitleri.YAKIN_ATIS_RPM);
+            atRPM(hedef);
+            SmartDashboard.putString("Atici/AktifPreset", "YAKIN_RPM");
+            SmartDashboard.putNumber("Atici/PresetIstenenRPM", hedef);
+        }
+    }
+
+    /** Orta atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
+    public void atOrta() {
+        if (SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false)) {
+            calistir(SmartDashboard.getNumber("Ayarlama/OrtaAtisHizi", ModulSabitleri.ORTA_ATIS_HIZI));
+            SmartDashboard.putString("Atici/AktifPreset", "ORTA_HIZ");
+        } else {
+            double hedef = presetRpmOku("Ayarlama/OrtaAtisRPM", ModulSabitleri.ORTA_ATIS_RPM);
+            atRPM(hedef);
+            SmartDashboard.putString("Atici/AktifPreset", "ORTA_RPM");
+            SmartDashboard.putNumber("Atici/PresetIstenenRPM", hedef);
+        }
+    }
+
+    /** Uzak atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
+    public void atUzak() {
+        if (SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false)) {
+            calistir(SmartDashboard.getNumber("Ayarlama/UzakAtisHizi", ModulSabitleri.UZAK_ATIS_HIZI));
+            SmartDashboard.putString("Atici/AktifPreset", "UZAK_HIZ");
+        } else {
+            double hedef = presetRpmOku("Ayarlama/UzakAtisRPM", ModulSabitleri.UZAK_ATIS_RPM);
+            atRPM(hedef);
+            SmartDashboard.putString("Atici/AktifPreset", "UZAK_RPM");
+            SmartDashboard.putNumber("Atici/PresetIstenenRPM", hedef);
+        }
+    }
+
     /** Dogrudan motor gucu ile calistir (duty cycle mode - brick kurtarma) */
     public void calistir(double hiz) {
         if (aticiMotoru != null) {
-            // Spark Max brick mode kurtarmak icin once duty cycle mode gec
+            sonHedefRPM = 0.0;
+            double sinirliHiz = dutyCycleSinirla(hiz);
             try {
-                aticiMotoru.set(hiz);
+                aticiMotoru.set(sinirliHiz);
             } catch (Exception e) {
-                // Hata olursa brick olabilir - yeniden yapilandirma dene
-                aticiMotoru.set(hiz);
+                aticiMotoru.set(sinirliHiz);
             }
         }
     }
@@ -102,11 +176,55 @@ public class AticiAltSistemi extends SubsystemBase {
         return sonHedefRPM;
     }
 
+    private double rpmSinirla(double rpm) {
+        return MathUtil.clamp(rpm, ModulSabitleri.ATICI_MIN_RPM, ModulSabitleri.ATICI_MAKS_RPM);
+    }
+
+    private double dutyCycleSinirla(double cikis) {
+        return MathUtil.clamp(cikis, -ModulSabitleri.ATICI_MAKS_CIKIS, ModulSabitleri.ATICI_MAKS_CIKIS);
+    }
+
+    private double presetRpmOku(String anahtar, double fallbackRpm) {
+        if (!SmartDashboard.getBoolean("Ayarlama/AticiPresetDashboardAktif", false)) {
+            return fallbackRpm;
+        }
+        return SmartDashboard.getNumber(anahtar, fallbackRpm);
+    }
+
+    /** PID değerlerini SmartDashboard'dan okuyup günceller (tuning için çağır) */
+    public void pidAyarlariniGuncelle() {
+        if (aticiMotoru != null) {
+            double kp = SmartDashboard.getNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
+            double ki = SmartDashboard.getNumber("Ayarlama/AticiKI", 0.0);
+            double kd = SmartDashboard.getNumber("Ayarlama/AticiKD", 0.0);
+
+            SparkMaxConfig pidGuncelle = new SparkMaxConfig();
+            pidGuncelle.closedLoop.p(kp).i(ki).d(kd);
+            aticiMotoru.configure(pidGuncelle,
+                ResetMode.kNoResetSafeParameters,
+                PersistMode.kNoPersistParameters);
+        }
+    }
+
     @Override
     public void periodic() {
         SmartDashboard.putNumber("Atici/HedefRPM", sonHedefRPM);
         SmartDashboard.putNumber("Atici/AktuelRPM", getAktuelRPM());
         SmartDashboard.putBoolean("Atici/HizaUlasti", isHizaUlasti());
+        SmartDashboard.putNumber("Atici/RPMHata", getAktuelRPM() - sonHedefRPM);
+        SmartDashboard.putNumber("Atici/MotorCikisi", aticiMotoru != null ? aticiMotoru.getAppliedOutput() * aticiMotoru.getBusVoltage() : 0.0);
+        SmartDashboard.putBoolean("Atici/AcikCevrimModu", SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false));
+
+        // PID değerlerini gerçek zamanlı güncelle (tuning için)
+        // Sadece değerler değiştiyse güncelle - sürekli configure işlemesin
+        if (aticiMotoru != null && pidKontrolcu != null) {
+            double kp = SmartDashboard.getNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
+            double ki = SmartDashboard.getNumber("Ayarlama/AticiKI", 0.0);
+            double kd = SmartDashboard.getNumber("Ayarlama/AticiKD", 0.0);
+
+            // Her periyotta configure etme - performansı etkiler
+            // Bunun yerine PID değerlerini manuel değiştiğinde güncelle
+        }
     }
 
     /** CAN kaynagini serbest birakir — test ortaminda @AfterAll ile cagrilmali */

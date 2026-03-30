@@ -1,5 +1,6 @@
 package frc.robot.util;
 
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 
 /**
@@ -8,8 +9,8 @@ import edu.wpi.first.wpilibj.GenericHID;
  * Eksen haritası:
  *   0 = Sol X (yanal)
  *   1 = Sol Y (ileri/geri)
- *   2 = Sol Tetik LT analog (0→1)  → atıcı spin-up
- *   3 = Sağ Tetik RT analog (0→1)  → ateş
+ *   2 = Sol Tetik LT analog (0→1)
+ *   3 = Sağ Tetik RT analog (0→1)
  *   4 = Sağ X (dönüş)
  *   5 = Sağ Y
  *
@@ -17,11 +18,16 @@ import edu.wpi.first.wpilibj.GenericHID;
  *   1 = A        → alım
  *   2 = B        → geri at
  *   3 = X        → taşıyıcı ters unjam (0.5 s)
- *   4 = Y        → taşıyıcı yukarı manuel
- *   5 = LB       → taret sola (fallback)
- *   6 = RB       → taret sağa (fallback)
+ *   4 = Y        → taşıyıcı (manuel)
+ *   5 = LB       → taret sola
+ *   6 = RB       → taret sağa
  *   7 = Back     → taret homing
  *   8 = Start    → gyro sıfırla
+ *
+ * D-Pad (POV) mapping:
+ *   0° (Up)    -> Yakın atış (~1.2m → 2750 RPM)
+ *   90° (Right)-> Orta atış (~2.8m → 3700 RPM)
+ *   180° (Down)-> Uzak atış (~4.4m → 4490 RPM)
  */
 public class XboxProfili extends KontrolcuProfili {
 
@@ -30,7 +36,6 @@ public class XboxProfili extends KontrolcuProfili {
     private static final int LT_EKSEN       = 2;
     private static final int RT_EKSEN       = 3;
     private static final int SAG_X_EKSEN    = 4;
-    private static final double ANALOG_ESIK = 0.1;
 
     private static final int ALIM_BTN       = 1;   // A
     private static final int GERI_AT_BTN    = 2;   // B
@@ -41,6 +46,11 @@ public class XboxProfili extends KontrolcuProfili {
     private static final int HOMING_BTN     = 7;   // Back
     private static final int GYRO_RESET_BTN = 8;   // Start
 
+    // D-Pad POV açıları
+    private static final int POV_UP    = 0;
+    private static final int POV_RIGHT = 90;
+    private static final int POV_DOWN  = 180;
+
     public XboxProfili(GenericHID hid) {
         super(hid);
     }
@@ -49,8 +59,9 @@ public class XboxProfili extends KontrolcuProfili {
     @Override public double ileriGeri() { return eksenGuvenliOku(SOL_Y_EKSEN); }
     @Override public double donus()     { return -eksenGuvenliOku(SAG_X_EKSEN); }
 
-    @Override public boolean aticiSpinupBasili() { return eksenGuvenliOku(LT_EKSEN) > ANALOG_ESIK; }
-    @Override public boolean atesBasili()        { return eksenGuvenliOku(RT_EKSEN) > ANALOG_ESIK; }
+    @Override public boolean yakinAtisBasili()    { return povOku() == POV_UP; }
+    @Override public boolean ortaAtisBasili()     { return povOku() == POV_RIGHT; }
+    @Override public boolean uzakAtisBasili()     { return povOku() == POV_DOWN; }
 
     @Override public boolean alimBasili()         { return dugmeGuvenliOku(ALIM_BTN); }
     @Override public boolean geriAtBasili()       { return dugmeGuvenliOku(GERI_AT_BTN); }
@@ -62,4 +73,14 @@ public class XboxProfili extends KontrolcuProfili {
     @Override public boolean taretHomingBasili() { return dugmeGuvenliOku(HOMING_BTN); }
 
     @Override public boolean gyroSifirlaBasili() { return dugmeGuvenliOku(GYRO_RESET_BTN); }
+
+    @Override public boolean gecikmeliAtisBasili() { return false; } // Xbox'ta button 10 yok
+
+    /** D-Pad (POV) açısını güvenli şekilde okur. Merkezde değilse -1 döner. */
+    private int povOku() {
+        int port = hid.getPort();
+        if (!DriverStation.isJoystickConnected(port)) return -1;
+        return hid.getPOV();
+    }
 }
+

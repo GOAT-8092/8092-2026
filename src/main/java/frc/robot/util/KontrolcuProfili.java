@@ -35,11 +35,23 @@ public abstract class KontrolcuProfili {
     public abstract double donus();
 
     // ── Atıcı ────────────────────────────────────────────────────────────────
-    /** Atıcı spin-up tetikleyici (true = çalıştır). */
-    public abstract boolean aticiSpinupBasili();
+    /** Yakın atış tetikleyici (~1.2m → 2750 RPM). */
+    public abstract boolean yakinAtisBasili();
 
-    /** Ateş tetikleyici — RobotKapsayici'de atıcı kilidiyle birleştirilir. */
-    public abstract boolean atesBasili();
+    /** Orta atış tetikleyici (~2.8m → 3700 RPM). */
+    public abstract boolean ortaAtisBasili();
+
+    /** Uzak atış tetikleyici (~4.4m → 4490 RPM). */
+    public abstract boolean uzakAtisBasili();
+
+    /** @deprecated Kullanma - 3 atış butonu kullan */
+    @Deprecated
+    public boolean aticiSpinupBasili() { return false; }
+
+    /** @deprecated Kullanma - 3 atış butonu kullan */
+    @Deprecated
+    public boolean atesBasili() { return false; }
+
     /** Shooter motorunu dogrudan calistiran dijital tus (opsiyonel). */
     public boolean shooterDirektBasili() { return false; }
 
