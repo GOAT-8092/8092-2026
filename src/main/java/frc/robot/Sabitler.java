@@ -186,6 +186,9 @@ public final class Sabitler {
         public static final double ALIM_HIZI = 0.75;
         public static final double DEPO_ATICI_YUKARI_TASIYICI_HIZI = 0.75;
         public static final double ATICI_HIZI = 0.90;
+        public static final double YAKIN_ATIS_HIZ_CARPANI = 0.80;
+        public static final double ORTA_ATIS_HIZ_CARPANI  = 0.90;
+        public static final double UZAK_ATIS_HIZ_CARPANI  = 1.00;
         public static final double ATICI_MIN_RPM = 2600.0;
         public static final double ATICI_MAKS_RPM = 5400.0;
         public static final double ATICI_MAKS_CIKIS = 0.90;

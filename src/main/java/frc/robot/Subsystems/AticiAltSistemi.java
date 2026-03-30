@@ -32,6 +32,10 @@ public class AticiAltSistemi extends SubsystemBase {
         SmartDashboard.putNumber("Ayarlama/YakinAtisHizi", ModulSabitleri.YAKIN_ATIS_HIZI);
         SmartDashboard.putNumber("Ayarlama/OrtaAtisHizi", ModulSabitleri.ORTA_ATIS_HIZI);
         SmartDashboard.putNumber("Ayarlama/UzakAtisHizi", ModulSabitleri.UZAK_ATIS_HIZI);
+        SmartDashboard.putNumber("Ayarlama/AticiHiz", ModulSabitleri.ATICI_HIZI);
+        SmartDashboard.putNumber("Ayarlama/YakinAtisHizCarpani", ModulSabitleri.YAKIN_ATIS_HIZ_CARPANI);
+        SmartDashboard.putNumber("Ayarlama/OrtaAtisHizCarpani", ModulSabitleri.ORTA_ATIS_HIZ_CARPANI);
+        SmartDashboard.putNumber("Ayarlama/UzakAtisHizCarpani", ModulSabitleri.UZAK_ATIS_HIZ_CARPANI);
         SmartDashboard.putBoolean("Ayarlama/AticiAcikCevrimModu", false);
         SmartDashboard.putBoolean("Ayarlama/AticiPresetDashboardAktif", false);
 
@@ -106,41 +110,26 @@ public class AticiAltSistemi extends SubsystemBase {
 
     /** Yakın atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
     public void atYakin() {
-        if (SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false)) {
-            calistir(SmartDashboard.getNumber("Ayarlama/YakinAtisHizi", ModulSabitleri.YAKIN_ATIS_HIZI));
-            SmartDashboard.putString("Atici/AktifPreset", "YAKIN_HIZ");
-        } else {
-            double hedef = presetRpmOku("Ayarlama/YakinAtisRPM", ModulSabitleri.YAKIN_ATIS_RPM);
-            atRPM(hedef);
-            SmartDashboard.putString("Atici/AktifPreset", "YAKIN_RPM");
-            SmartDashboard.putNumber("Atici/PresetIstenenRPM", hedef);
-        }
+        double hiz = presetHiziHesapla("Ayarlama/YakinAtisHizCarpani", ModulSabitleri.YAKIN_ATIS_HIZ_CARPANI);
+        calistir(hiz);
+        SmartDashboard.putString("Atici/AktifPreset", "YAKIN_HIZ");
+        SmartDashboard.putNumber("Atici/PresetIstenenHiz", hiz);
     }
 
     /** Orta atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
     public void atOrta() {
-        if (SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false)) {
-            calistir(SmartDashboard.getNumber("Ayarlama/OrtaAtisHizi", ModulSabitleri.ORTA_ATIS_HIZI));
-            SmartDashboard.putString("Atici/AktifPreset", "ORTA_HIZ");
-        } else {
-            double hedef = presetRpmOku("Ayarlama/OrtaAtisRPM", ModulSabitleri.ORTA_ATIS_RPM);
-            atRPM(hedef);
-            SmartDashboard.putString("Atici/AktifPreset", "ORTA_RPM");
-            SmartDashboard.putNumber("Atici/PresetIstenenRPM", hedef);
-        }
+        double hiz = presetHiziHesapla("Ayarlama/OrtaAtisHizCarpani", ModulSabitleri.ORTA_ATIS_HIZ_CARPANI);
+        calistir(hiz);
+        SmartDashboard.putString("Atici/AktifPreset", "ORTA_HIZ");
+        SmartDashboard.putNumber("Atici/PresetIstenenHiz", hiz);
     }
 
     /** Uzak atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
     public void atUzak() {
-        if (SmartDashboard.getBoolean("Ayarlama/AticiAcikCevrimModu", false)) {
-            calistir(SmartDashboard.getNumber("Ayarlama/UzakAtisHizi", ModulSabitleri.UZAK_ATIS_HIZI));
-            SmartDashboard.putString("Atici/AktifPreset", "UZAK_HIZ");
-        } else {
-            double hedef = presetRpmOku("Ayarlama/UzakAtisRPM", ModulSabitleri.UZAK_ATIS_RPM);
-            atRPM(hedef);
-            SmartDashboard.putString("Atici/AktifPreset", "UZAK_RPM");
-            SmartDashboard.putNumber("Atici/PresetIstenenRPM", hedef);
-        }
+        double hiz = presetHiziHesapla("Ayarlama/UzakAtisHizCarpani", ModulSabitleri.UZAK_ATIS_HIZ_CARPANI);
+        calistir(hiz);
+        SmartDashboard.putString("Atici/AktifPreset", "UZAK_HIZ");
+        SmartDashboard.putNumber("Atici/PresetIstenenHiz", hiz);
     }
 
     /** Dogrudan motor gucu ile calistir (duty cycle mode - brick kurtarma) */
@@ -189,6 +178,12 @@ public class AticiAltSistemi extends SubsystemBase {
             return fallbackRpm;
         }
         return SmartDashboard.getNumber(anahtar, fallbackRpm);
+    }
+
+    private double presetHiziHesapla(String carpanAnahtari, double fallbackCarpan) {
+        double tabanHiz = SmartDashboard.getNumber("Ayarlama/AticiHiz", ModulSabitleri.ATICI_HIZI);
+        double carpan = SmartDashboard.getNumber(carpanAnahtari, fallbackCarpan);
+        return dutyCycleSinirla(tabanHiz * carpan);
     }
 
     /** PID değerlerini SmartDashboard'dan okuyup günceller (tuning için çağır) */

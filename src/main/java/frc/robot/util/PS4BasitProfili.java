@@ -61,7 +61,7 @@ public class PS4BasitProfili extends KontrolcuProfili {
 
     @Override public double yanal()     { return eksenGuvenliOku(SOL_X_EKSEN); }
     @Override public double ileriGeri() { return eksenGuvenliOku(SOL_Y_EKSEN); }
-    @Override public double donus()     { return -eksenGuvenliOku(SAG_X_EKSEN); }
+    @Override public double donus()     { return eksenGuvenliOku(SAG_X_EKSEN); }
 
     @Override public boolean yakinAtisBasili()   { return povOku() == POV_UP; }
     @Override public boolean ortaAtisBasili()    { return povOku() == POV_RIGHT; }
