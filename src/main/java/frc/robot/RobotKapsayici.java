@@ -34,7 +34,6 @@ import frc.robot.Subsystems.AticiAltSistemi;
 import frc.robot.Subsystems.GorusAltSistemi;
 import frc.robot.Subsystems.SurusAltSistemi;
 import frc.robot.util.Elastic;
-import frc.robot.util.AtisHesaplayici;
 import frc.robot.util.Elastic.Notification;
 import frc.robot.util.Elastic.NotificationLevel;
 import frc.robot.util.KontrolcuProfili;
@@ -67,12 +66,6 @@ public class RobotKapsayici {
   private final SendableChooser<KontrolcuProfili> operatorProfilSecici = new SendableChooser<>();
   private final SendableChooser<SurucuModu> surucuModuSecici = new SendableChooser<>();
 
-  /**
-   * Limelight hedef görmediğinde kullanılacak manuel atış mesafe ön ayarı.
-   * Elastic'ten maç öncesinde veya sırasında seçilebilir.
-   */
-  private final SendableChooser<Sabitler.ManuelAtisModu> atisModuSecici = new SendableChooser<>();
-
   // ── Durum izleme ──────────────────────────────────────────────────────────
   private boolean surucuBagliOncekiDurum        = false;
   private boolean operatorBagliOncekiDurum      = false;
@@ -102,7 +95,6 @@ public class RobotKapsayici {
     aticiAltSistemi  = new AticiAltSistemi();
 
     kontrolcuProfilleriniKur();
-    atisModuSeciciKur();
     defaultKomutlariniKur();
     baglamalariYapilandir();
     pathPlannerKomutlariniKaydet();
@@ -139,17 +131,6 @@ public class RobotKapsayici {
     surucuModuSecici.setDefaultOption("Tek Surucu", SurucuModu.TEK_SURUCU);
     surucuModuSecici.addOption("Iki Surucu", SurucuModu.IKI_SURUCU);
     SmartDashboard.putData("Kontrolcu/SurucuModu", surucuModuSecici);
-  }
-
-  private void atisModuSeciciKur() {
-    // Varsayılan: orta mesafe — en sık kullanılan senaryo
-    atisModuSecici.setDefaultOption(
-        Sabitler.ManuelAtisModu.ORTA.etiket, Sabitler.ManuelAtisModu.ORTA);
-    atisModuSecici.addOption(
-        Sabitler.ManuelAtisModu.YAKIN.etiket, Sabitler.ManuelAtisModu.YAKIN);
-    atisModuSecici.addOption(
-        Sabitler.ManuelAtisModu.UZAK.etiket,  Sabitler.ManuelAtisModu.UZAK);
-    SmartDashboard.putData("Atici/ManuelMod", atisModuSecici);
   }
 
   /** Surucu profili null-safe döndürür; seçim yoksa PS4 Tam fallback. */
@@ -429,35 +410,6 @@ public class RobotKapsayici {
     }
 
     SmartDashboard.putNumber(surucuIstasyonuAnahtari("POV"), guvenliPovOku());
-  }
-
-  private void hedefMesafesineGoreAticiCalistir() {
-    // 1. Öncelik: Limelight hedefi görüyor → interpolasyon tablosuyla hassas RPM
-    if (gorusAltSistemi.isHedefTagGorunuyor()) {
-      double mesafeMetre = gorusAltSistemi.getDistanceToTarget();
-      double hedefRpm    = AtisHesaplayici.hesaplaHedefRpm(mesafeMetre);
-      aticiAltSistemi.atRPM(hedefRpm);
-      SmartDashboard.putString("Atici/AtisModu",       "Limelight_Otomatik");
-      SmartDashboard.putNumber("Atici/HedefMesafe_m",  mesafeMetre);
-      SmartDashboard.putNumber("Atici/HesaplananRPM",  hedefRpm);
-      return;
-    }
-
-    // 2. Fallback: Limelight yok → sürücünün Elastic'ten seçtiği manuel ön ayar
-    Sabitler.ManuelAtisModu mod = atisModuSecici.getSelected();
-    if (mod == null) mod = Sabitler.ManuelAtisModu.ORTA; // null-safe koruma
-
-    aticiAltSistemi.atRPM(mod.rpm);
-    SmartDashboard.putString("Atici/AtisModu",      "Manuel_" + mod.name());
-    SmartDashboard.putNumber("Atici/HedefMesafe_m", Double.NaN); // mesafe bilinmiyor
-    SmartDashboard.putNumber("Atici/HesaplananRPM", mod.rpm);
-  }
-
-  private void aticiyiSabitHizdaCalistir() {
-    aticiAltSistemi.atRPM(ModulSabitleri.ATICI_HEDEF_RPM);
-    SmartDashboard.putString("Atici/AtisModu", "SabitRPM");
-    SmartDashboard.putNumber("Atici/HedefMesafe_m", Double.NaN);
-    SmartDashboard.putNumber("Atici/HesaplananRPM", ModulSabitleri.ATICI_HEDEF_RPM);
   }
 
   // ── Bağlantı / Elastic bildirimleri ──────────────────────────────────────
