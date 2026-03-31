@@ -52,7 +52,8 @@ public class LimelightMerkezlemeKomutu extends Command {
             return;
         }
 
-        double tx = gorusAltSistemi.getHorizontalOffset();
+        int gorunenTagSayisi = gorusAltSistemi.getGorunenTagSayisi(MERKEZ_TAGLER);
+        double tx = gorusAltSistemi.getOrtalamaHorizontalOffset(MERKEZ_TAGLER);
         double donusKomutu = 0.0;
         if (Math.abs(tx) > TX_TOLERANS_DEG) {
             donusKomutu = MathUtil.clamp(tx * DONUS_KP, -MAX_DONUS, MAX_DONUS);
@@ -67,6 +68,7 @@ public class LimelightMerkezlemeKomutu extends Command {
         SmartDashboard.putNumber("Vision/MerkezlemeTx", tx);
         SmartDashboard.putNumber("Vision/MerkezlemeDonus", donusKomutu);
         SmartDashboard.putNumber("Vision/KararliSayac", kararlıSayac);
+        SmartDashboard.putNumber("Vision/GorunenTagSayisi", gorunenTagSayisi);
     }
 
     @Override

@@ -165,6 +165,43 @@ public class GorusAltSistemi extends SubsystemBase {
         return (int) io.getInteger("tid", 0);
     }
 
+    /**
+     * rawfiducials dizisinden istenen tag ID'lerini filtreler ve txnc değerlerinin
+     * ortalamasını döner. Hiç eşleşme yoksa normal tx'e düşer.
+     * rawfiducials formatı (7 değer/tag): [id, txnc, tync, ta, distToCamera, distToRobot, ambiguity]
+     *
+     * @param hedefTagIds izin verilen tag ID seti
+     * @return ortalama yatay açı hatası (derece)
+     */
+    public double getOrtalamaHorizontalOffset(java.util.Set<Integer> hedefTagIds) {
+        double[] raw = io.getDoubleArray("rawfiducials", new double[0]);
+        double txToplam = 0;
+        int sayac = 0;
+        for (int i = 0; i + 6 < raw.length; i += 7) {
+            int id = (int) raw[i];
+            if (hedefTagIds.contains(id)) {
+                txToplam += raw[i + 1]; // txnc
+                sayac++;
+            }
+        }
+        return sayac > 0 ? txToplam / sayac : io.getDouble("tx", 0);
+    }
+
+    /**
+     * rawfiducials içinde verilen ID setinden kaç tag göründüğünü döner.
+     * rawfiducials boşsa ve hedef varsa 1 döner.
+     */
+    public int getGorunenTagSayisi(java.util.Set<Integer> hedefTagIds) {
+        double[] raw = io.getDoubleArray("rawfiducials", new double[0]);
+        if (raw.length < 7) return cachedHasTarget ? 1 : 0;
+        int sayac = 0;
+        for (int i = 0; i + 6 < raw.length; i += 7) {
+            int id = (int) raw[i];
+            if (hedefTagIds.contains(id)) sayac++;
+        }
+        return sayac;
+    }
+
     /** Görünen tag, mevcut ittifakın atış hedefi mi? */
     public boolean isHedefTagGorunuyor() {
         if (!cachedHasTarget) return false;
