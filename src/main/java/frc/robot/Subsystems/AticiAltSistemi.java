@@ -73,6 +73,7 @@ public class AticiAltSistemi extends SubsystemBase {
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(kp, ki, kd)
                 .outputRange(0.0, ModulSabitleri.ATICI_MAKS_CIKIS);
+            yapilandirma.closedLoop.feedForward.kV(kff);
 
             aticiMotoru.configure(yapilandirma,
                 ResetMode.kResetSafeParameters,  // Safe parameters reset
@@ -92,14 +93,7 @@ public class AticiAltSistemi extends SubsystemBase {
         double sinirliHedefRpm = rpmSinirla(hedefRPM);
         sonHedefRPM = sinirliHedefRpm;
         if (pidKontrolcu != null) {
-            double kff = SmartDashboard.getNumber("Ayarlama/AticiKFF", ModulSabitleri.ATICI_KFF);
-            double arbFF = kff * sinirliHedefRpm;
-            pidKontrolcu.setReference(
-                sinirliHedefRpm,
-                SparkBase.ControlType.kVelocity,
-                ClosedLoopSlot.kSlot0,
-                arbFF,
-                SparkClosedLoopController.ArbFFUnits.kPercentOut);
+            pidKontrolcu.setSetpoint(sinirliHedefRpm, SparkBase.ControlType.kVelocity, ClosedLoopSlot.kSlot0);
         }
     }
 
@@ -209,6 +203,7 @@ public class AticiAltSistemi extends SubsystemBase {
 
             SparkMaxConfig pidGuncelle = new SparkMaxConfig();
             pidGuncelle.closedLoop.p(kp).i(ki).d(kd);
+            pidGuncelle.closedLoop.feedForward.kV(kff);
             aticiMotoru.configure(pidGuncelle,
                 ResetMode.kNoResetSafeParameters,
                 PersistMode.kNoPersistParameters);
