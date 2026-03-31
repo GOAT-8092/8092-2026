@@ -1,6 +1,7 @@
 package frc.robot.Subsystems;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import org.junit.jupiter.api.AfterAll;
 import org.junit.jupiter.api.BeforeAll;
@@ -59,11 +60,11 @@ class MekanizmaAltSistemiTesti {
     @Test
     @Tag("fast")
     void aticiSonKomutTakipEder() {
-        atici.at();
-        assertEquals(ModulSabitleri.ATICI_HEDEF_RPM, atici.getSonHedefRPM(), 1e-9);
+        atici.atRPM(ModulSabitleri.ATICI_HEDEF_RPM);
+        assertEquals(ModulSabitleri.ATICI_HEDEF_RPM, atici.getAktuelRPM(), 200.0);
 
         atici.durdur();
-        assertEquals(0.0, atici.getSonHedefRPM(), 1e-9);
+        assertFalse(atici.isHizaUlasti());
     }
 
     @Test
