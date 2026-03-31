@@ -8,11 +8,15 @@ import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.auto.NamedCommands;
 
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.FunctionalCommand;
 import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
@@ -344,18 +348,106 @@ public class RobotKapsayici {
             taretAltSistemi, aticiAltSistemi, alimAltSistemi, gorusAltSistemi)
             .withTimeout(10.0)
     );
+
+    // Otonom devre disi / bekleme komutu
+    NamedCommands.registerCommand(
+        "OtonomYapma",
+        new WaitCommand(0.1)
+    );
   }
 
   private void otonomSeciciKur() {
     try {
       otonomSecici = AutoBuilder.buildAutoChooser();
+      otonomSecici.setDefaultOption(
+          "Otonom Yapma",
+          new InstantCommand(() -> SmartDashboard.putString("Auto/OzelBaslangic", "YAPMA")));
+      otonomSecici.addOption("Ozel Oto - LEFT", ozelOtoKomutuOlustur("LEFT", -45.0));
+      otonomSecici.addOption("Ozel Oto - MIDDLE", ozelOtoKomutuOlustur("MIDDLE", 0.0));
+      otonomSecici.addOption("Ozel Oto - RIGHT", ozelOtoKomutuOlustur("RIGHT", 45.0));
       SmartDashboard.putData("Auto Chooser", otonomSecici);
     } catch (Exception e) {
       DriverStation.reportError("PathPlanner otonomlari yuklenemedi: " + e.getMessage(), true);
       otonomSecici = new SendableChooser<>();
-      otonomSecici.setDefaultOption("Yok (PathPlanner Hatasi)", null);
+      otonomSecici.setDefaultOption(
+          "Otonom Yapma",
+          new InstantCommand(() -> SmartDashboard.putString("Auto/OzelBaslangic", "YAPMA")));
+      otonomSecici.addOption("Ozel Oto - LEFT", ozelOtoKomutuOlustur("LEFT", -45.0));
+      otonomSecici.addOption("Ozel Oto - MIDDLE", ozelOtoKomutuOlustur("MIDDLE", 0.0));
+      otonomSecici.addOption("Ozel Oto - RIGHT", ozelOtoKomutuOlustur("RIGHT", 45.0));
       SmartDashboard.putData("Auto Chooser", otonomSecici);
     }
+  }
+
+  private Command ozelOtoKomutuOlustur(String baslangic, double donusDerece) {
+    final double hedefMesafeMetre = 1.20;
+    final double surusHizi = 0.35;
+
+    Command donusKomutu = Math.abs(donusDerece) < 0.01
+        ? new InstantCommand(() -> {}, surusAltSistemi)
+        : hedefeDonusKomutu(donusDerece);
+
+    Command ilerlemeKomutu = mesafeIlerleKomutu(hedefMesafeMetre, surusHizi);
+
+    Command atisKomutu = new ParallelCommandGroup(
+        new RunCommand(() -> aticiAltSistemi.atOrta(), aticiAltSistemi)
+            .withTimeout(10.0),
+        new WaitCommand(0.3)
+            .andThen(new RunCommand(
+                () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(), alimAltSistemi)
+                .withTimeout(9.7)))
+        .finallyDo(() -> {
+          aticiAltSistemi.durdur();
+          alimAltSistemi.depodanAticiyaYukariTasimaDurdur();
+        });
+
+    return new SequentialCommandGroup(
+        new InstantCommand(() -> {
+          SmartDashboard.putString("Auto/OzelBaslangic", baslangic);
+          surusAltSistemi.tumMotorlariDurdur();
+        }, surusAltSistemi),
+        donusKomutu,
+        ilerlemeKomutu,
+        atisKomutu
+    );
+  }
+
+  private Command hedefeDonusKomutu(double donusDerece) {
+    PIDController donusPid = new PIDController(0.02, 0.0, 0.001);
+    donusPid.enableContinuousInput(-180.0, 180.0);
+    donusPid.setTolerance(2.0);
+    final double[] hedefBaslik = new double[1];
+
+    return new FunctionalCommand(
+        () -> {
+          donusPid.reset();
+          hedefBaslik[0] = surusAltSistemi.getHeading().getDegrees() + donusDerece;
+          donusPid.setSetpoint(hedefBaslik[0]);
+        },
+        () -> {
+          double cikis = donusPid.calculate(surusAltSistemi.getHeading().getDegrees());
+          cikis = MathUtil.clamp(cikis, -0.35, 0.35);
+          surusAltSistemi.drive(0.0, 0.0, cikis);
+        },
+        interrupted -> surusAltSistemi.drive(0.0, 0.0, 0.0),
+        donusPid::atSetpoint,
+        surusAltSistemi
+    ).withTimeout(2.0);
+  }
+
+  private Command mesafeIlerleKomutu(double hedefMesafeMetre, double hiz) {
+    final Translation2d[] baslangicPozu = new Translation2d[1];
+
+    return new FunctionalCommand(
+        () -> baslangicPozu[0] = surusAltSistemi.getPose().getTranslation(),
+        () -> surusAltSistemi.drive(hiz, 0.0, 0.0),
+        interrupted -> surusAltSistemi.drive(0.0, 0.0, 0.0),
+        () -> {
+          double gidilen = surusAltSistemi.getPose().getTranslation().getDistance(baslangicPozu[0]);
+          return gidilen >= hedefMesafeMetre;
+        },
+        surusAltSistemi
+    ).withTimeout(3.0);
   }
 
   // ── Periyodik ─────────────────────────────────────────────────────────────
