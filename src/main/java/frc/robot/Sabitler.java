@@ -41,39 +41,6 @@ public final class Sabitler {
         public static final int ATICI_MOTOR_ID = 7; // CAN ID 6'dan 7'ye degistirildi (brick mode sorunu)
         public static final boolean ATICI_MOTOR_TERS = false;
 
-        // Taret motoru (tek Spark Max)
-        public static final int TARET_MOTOR_ID = 5;
-        public static final boolean TARET_MOTOR_TERS = false;
-
-        // Taret disli orani: 200T ring / 20T pinion = 10.0:1
-        public static final double TARET_DISLI_ORANI = 200.0 / 20.0;
-
-        // Poz tabanli taret takibi - DEVRE DISI (sadece manuel kontrol)
-        public static final double TARET_POZ_KP = 0.0;            // derece hata -> motor hizi (0 = otomatik kapali)
-        public static final double TARET_KI = 0.0;               // statik surunme hatasini giderir
-        public static final double TARET_HIZALAMA_ESIGI_DERECE = 2.0;
-
-        // MAXMotion trapezoidal profil (SparkMax onboard)
-        public static final double TARET_MAXMOTION_CRUISE_RPM = 200.0;    // Motor cruise hizi (RPM)
-        public static final double TARET_MAXMOTION_ACCEL_RPM_S = 400.0;   // Motor ivme (RPM/s)
-        public static final double TARET_MAXMOTION_HATA_TOLERANSI = 0.1;  // Motor rotasyon hatasi
-        // Taret one bakiyor: 0° = robotun onu, offset sifir
-        // (Eski: TARET_ARKA_OFFSET_DERECE = 180.0 — taret arkadaydi)
-        public static final double TARET_ON_OFFSET_DERECE = 0.0;
-
-        // Taret aci sinirlari (toplam 180 derece hareket alani)
-        // 0° = robotun onu, -90° = limit switch pozisyonu (baslangic)
-        public static final double TARET_MAKS_ACI = 90.0;   // derece
-        public static final double TARET_MIN_ACI = -90.0;   // derece (limit switch)
-
-        // Taret limit switch (homing icin, normally closed)
-        public static final int TARET_LIMIT_SWITCH_DIO = 0;
-        // DIO okuma seviyesi: true=aktif high, false=aktif low.
-        // Mevcut robot kurulumunda switch basili durum "low" olarak okunuyor.
-        public static final boolean TARET_LIMIT_SWITCH_AKTIF_HIGH = true;
-        // Homing sirasinda tareti limit switch'e dogru dondurmek icin hiz
-        // Manuel hiz ile ayni (daha kontrollu)
-        public static final double TARET_HOMING_HIZI = -0.08;
     }
 
     public static class SurusSabitleri {
@@ -214,7 +181,6 @@ public final class Sabitler {
             {3800, 4500, 5200, 5350, 5400, 5400};
         public static final double ATICI_KP = 0.0003;         // Velocity PID P kazanci
         public static final double ATICI_KFF = 1.0 / 5676.0; // Velocity feedforward: 1/NEO max RPM
-        public static final double TARET_HIZI = 0.08;
     }
 
     /**

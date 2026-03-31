@@ -18,28 +18,24 @@ import frc.robot.Sabitler.ModulSabitleri;
 class MekanizmaAltSistemiTesti {
     private AlimAltSistemi alim;
     private AticiAltSistemi atici;
-    private TaretAltSistemi taret;
 
     @BeforeAll
     void initAll() {
         HAL.initialize(500, 0);
         alim = new AlimAltSistemi();
         atici = new AticiAltSistemi();
-        taret = new TaretAltSistemi();
     }
 
     @BeforeEach
     void resetState() {
         alim.durdur();
         atici.durdur();
-        taret.durdur();
     }
 
     @AfterAll
     void teardownAll() {
         alim.close();
         atici.close();
-        taret.close();
     }
 
     @Test
@@ -67,12 +63,4 @@ class MekanizmaAltSistemiTesti {
         assertFalse(atici.isHizaUlasti());
     }
 
-    @Test
-    @Tag("fast")
-    void taretAciAyarlamaOranliKomutVerir() {
-        taret.aciAyarla(100.0);
-        assertEquals(1.0, taret.getSonKomutHizi(), 1e-9);
-        taret.durdur();
-        assertEquals(0.0, taret.getSonKomutHizi(), 1e-9);
-    }
 }

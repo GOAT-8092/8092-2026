@@ -92,8 +92,6 @@ public class RobotKapsayici {
             surusAltSistemi
         )
     );
-
-    // Taret varsaylan komutu yok - sadece manuel kontrol (L1/R1/L2)
   }
 
   //  Buton balamalar 

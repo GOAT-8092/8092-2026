@@ -66,11 +66,6 @@ public abstract class KontrolcuProfili {
     /** Taşıyıcı ters — unjam (0.5 s). */
     public abstract boolean tasiyiciTersBasili();
 
-    // ── Taret (fallback manuel) ───────────────────────────────────────────────
-    public abstract boolean taretSolaBasili();
-    public abstract boolean taretSagaBasili();
-    public abstract boolean taretHomingBasili();
-
     // ── Sistem ───────────────────────────────────────────────────────────────
     public abstract boolean gyroSifirlaBasili();
     /** Opsiyonel: tek tusla gecikmeli atis sirasi (spin-up + gecikmeli tasiyici). */
