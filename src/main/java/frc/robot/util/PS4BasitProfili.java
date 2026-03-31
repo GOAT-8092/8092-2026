@@ -66,6 +66,7 @@ public class PS4BasitProfili extends KontrolcuProfili {
     @Override public boolean yakinAtisBasili()   { return povOku() == POV_UP; }
     @Override public boolean ortaAtisBasili()    { return povOku() == POV_RIGHT; }
     @Override public boolean uzakAtisBasili()    { return povOku() == POV_DOWN; }
+    @Override public boolean cokUzakAtisBasili() { return povOku() == 270; }
 
     @Override public boolean alimBasili()         { return dugmeGuvenliOku(ALIM_BTN); }
     @Override public boolean geriAtBasili()       { return dugmeGuvenliOku(GERI_AT_BTN); }

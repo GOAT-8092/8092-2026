@@ -55,6 +55,7 @@ public class PS4TamProfili extends KontrolcuProfili {
     private static final int POV_UP    = 0;
     private static final int POV_RIGHT = 90;
     private static final int POV_DOWN  = 180;
+    private static final int POV_LEFT  = 270;
 
     public PS4TamProfili(GenericHID hid) {
         super(hid);
@@ -67,6 +68,7 @@ public class PS4TamProfili extends KontrolcuProfili {
     @Override public boolean yakinAtisBasili()    { return povOku() == POV_UP; }
     @Override public boolean ortaAtisBasili()     { return povOku() == POV_RIGHT; }
     @Override public boolean uzakAtisBasili()     { return povOku() == POV_DOWN; }
+    @Override public boolean cokUzakAtisBasili()  { return povOku() == POV_LEFT; }
 
     @Override public boolean alimBasili()          { return dugmeGuvenliOku(ALIM_BTN); }
     @Override public boolean geriAtBasili()        { return dugmeGuvenliOku(GERI_AT_BTN); }

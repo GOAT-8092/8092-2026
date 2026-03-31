@@ -196,9 +196,10 @@ public final class Sabitler {
 
         // 3 mesafe için atış RPM değerleri (Elastic Dashboard'dan değiştirilebilir)
         // SAHA TESTI ile kalibre edildi: 5200 RPM → 2.8m atış başarılı
-        public static double YAKIN_ATIS_RPM = 3800.0;  // ~1.2 m
-        public static double ORTA_ATIS_RPM  = 5200.0;  // ~2.8 m (test edilmiş değer)
-        public static double UZAK_ATIS_RPM  = 5400.0;  // ~4.4 m (stabilite icin limitli)
+        public static double YAKIN_ATIS_RPM    = 3800.0;  // D-Pad Yukari  (~1.2 m)
+        public static double ORTA_ATIS_RPM   = 4600.0;  // D-Pad Sag     (~2.0 m)
+        public static double UZAK_ATIS_RPM   = 5200.0;  // D-Pad Asagi   (~2.8 m)
+        public static double COK_UZAK_ATIS_RPM = 5400.0; // D-Pad Sol     (~4.4 m)
         public static final double YAKIN_ATIS_HIZI = YAKIN_ATIS_RPM / 5676.0;
         public static final double ORTA_ATIS_HIZI  = ORTA_ATIS_RPM / 5676.0;
         public static final double UZAK_ATIS_HIZI  = UZAK_ATIS_RPM / 5676.0;

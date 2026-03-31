@@ -29,7 +29,8 @@ public class AticiAltSistemi extends SubsystemBase {
         SmartDashboard.putNumber("Ayarlama/AticiRPM", ModulSabitleri.ATICI_HEDEF_RPM);
         SmartDashboard.putNumber("Ayarlama/YakinAtisRPM", ModulSabitleri.YAKIN_ATIS_RPM);
         SmartDashboard.putNumber("Ayarlama/OrtaAtisRPM", ModulSabitleri.ORTA_ATIS_RPM);
-        SmartDashboard.putNumber("Ayarlama/UzakAtisRPM", ModulSabitleri.UZAK_ATIS_RPM);
+        SmartDashboard.putNumber("Ayarlama/UzakAtisRPM",    ModulSabitleri.UZAK_ATIS_RPM);
+        SmartDashboard.putNumber("Ayarlama/CokUzakAtisRPM", ModulSabitleri.COK_UZAK_ATIS_RPM);
         SmartDashboard.putNumber("Ayarlama/YakinAtisHizi", ModulSabitleri.YAKIN_ATIS_HIZI);
         SmartDashboard.putNumber("Ayarlama/OrtaAtisHizi", ModulSabitleri.ORTA_ATIS_HIZI);
         SmartDashboard.putNumber("Ayarlama/UzakAtisHizi", ModulSabitleri.UZAK_ATIS_HIZI);
@@ -115,28 +116,28 @@ public class AticiAltSistemi extends SubsystemBase {
         atRPM(SmartDashboard.getNumber("Ayarlama/AticiRPM", ModulSabitleri.ATICI_HEDEF_RPM));
     }
 
-    /** Yakın atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
+    /** D-Pad Yukarı — yakın atış */
     public void atYakin() {
-        double hiz = presetHiziHesapla("Ayarlama/YakinAtisHizCarpani", ModulSabitleri.YAKIN_ATIS_HIZ_CARPANI);
-        calistir(hiz);
-        SmartDashboard.putString("Atici/AktifPreset", "YAKIN_HIZ");
-        SmartDashboard.putNumber("Atici/PresetIstenenHiz", hiz);
+        atRPM(SmartDashboard.getNumber("Ayarlama/YakinAtisRPM", ModulSabitleri.YAKIN_ATIS_RPM));
+        SmartDashboard.putString("Atici/AktifPreset", "YAKIN");
     }
 
-    /** Orta atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
+    /** D-Pad Sağ — orta atış */
     public void atOrta() {
-        double hiz = presetHiziHesapla("Ayarlama/OrtaAtisHizCarpani", ModulSabitleri.ORTA_ATIS_HIZ_CARPANI);
-        calistir(hiz);
-        SmartDashboard.putString("Atici/AktifPreset", "ORTA_HIZ");
-        SmartDashboard.putNumber("Atici/PresetIstenenHiz", hiz);
+        atRPM(SmartDashboard.getNumber("Ayarlama/OrtaAtisRPM", ModulSabitleri.ORTA_ATIS_RPM));
+        SmartDashboard.putString("Atici/AktifPreset", "ORTA");
     }
 
-    /** Uzak atış RPM'i ile at (Elastic Dashboard'dan ayarlanabilir) */
+    /** D-Pad Aşağı — uzak atış */
     public void atUzak() {
-        double hiz = presetHiziHesapla("Ayarlama/UzakAtisHizCarpani", ModulSabitleri.UZAK_ATIS_HIZ_CARPANI);
-        calistir(hiz);
-        SmartDashboard.putString("Atici/AktifPreset", "UZAK_HIZ");
-        SmartDashboard.putNumber("Atici/PresetIstenenHiz", hiz);
+        atRPM(SmartDashboard.getNumber("Ayarlama/UzakAtisRPM", ModulSabitleri.UZAK_ATIS_RPM));
+        SmartDashboard.putString("Atici/AktifPreset", "UZAK");
+    }
+
+    /** D-Pad Sol — çok uzak atış */
+    public void atCokUzak() {
+        atRPM(SmartDashboard.getNumber("Ayarlama/CokUzakAtisRPM", ModulSabitleri.COK_UZAK_ATIS_RPM));
+        SmartDashboard.putString("Atici/AktifPreset", "COK_UZAK");
     }
 
     /** Dogrudan motor gucu ile calistir (duty cycle mode - brick kurtarma) */

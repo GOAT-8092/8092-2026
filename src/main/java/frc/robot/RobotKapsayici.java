@@ -108,9 +108,10 @@ public class RobotKapsayici {
     Trigger geriAtTetik       = new Trigger(() -> surucuKontrolcusu.getRawButton(2));
     Trigger tasiyiciTetik     = new Trigger(() -> surucuProfili.tasiyiciBasili());
     Trigger tasiyiciTersTetik = new Trigger(() -> surucuProfili.tasiyiciTersBasili());
-    Trigger yakinAtisTetik    = new Trigger(() -> surucuProfili.yakinAtisBasili());
-    Trigger ortaAtisTetik    = new Trigger(() -> surucuProfili.ortaAtisBasili());
-    Trigger uzakAtisTetik    = new Trigger(() -> surucuProfili.uzakAtisBasili());
+    Trigger yakinAtisTetik   = new Trigger(() -> surucuProfili.yakinAtisBasili());
+    Trigger ortaAtisTetik   = new Trigger(() -> surucuProfili.ortaAtisBasili());
+    Trigger uzakAtisTetik   = new Trigger(() -> surucuProfili.uzakAtisBasili());
+    Trigger cokUzakAtisTetik = new Trigger(() -> surucuProfili.cokUzakAtisBasili());
     Trigger limelightHizalaTetik = new Trigger(() -> surucuKontrolcusu.getRawButton(8));
     Trigger gyroSifirTetik    = new Trigger(() -> surucuProfili.gyroSifirlaBasili());
     Trigger gecikmeliAtisTetik = new Trigger(() -> surucuProfili.gecikmeliAtisBasili());
@@ -143,21 +144,22 @@ public class RobotKapsayici {
                 () -> alimAltSistemi.depodanAticiyaYukariTasimaDurdur(), alimAltSistemi))
     );
 
-    //  Atc kontrolleri - 3 mesafe iin D-Pad butonlar 
-    // Yakn, Orta, Uzak at - shooter belirtilen RPM'e ulanca titreim
-    // Tayc manuel olarak Triangle ile alr
-
+    //  D-Pad: Manuel atış (4 hız) — hizalama yok, atıcı ısın → RPM'e ulaş → konveyör
     yakinAtisTetik
-        .whileTrue(new RunCommand(() -> aticiAltSistemi.atYakin(), aticiAltSistemi))
-        .onFalse(new InstantCommand(() -> aticiAltSistemi.durdur(), aticiAltSistemi));
+        .whileTrue(manuelAtisKomutu(() -> aticiAltSistemi.atYakin()))
+        .onFalse(atisTemizleKomutu());
 
     ortaAtisTetik
-        .whileTrue(new RunCommand(() -> aticiAltSistemi.atOrta(), aticiAltSistemi))
-        .onFalse(new InstantCommand(() -> aticiAltSistemi.durdur(), aticiAltSistemi));
+        .whileTrue(manuelAtisKomutu(() -> aticiAltSistemi.atOrta()))
+        .onFalse(atisTemizleKomutu());
 
     uzakAtisTetik
-        .whileTrue(new RunCommand(() -> aticiAltSistemi.atUzak(), aticiAltSistemi))
-        .onFalse(new InstantCommand(() -> aticiAltSistemi.durdur(), aticiAltSistemi));
+        .whileTrue(manuelAtisKomutu(() -> aticiAltSistemi.atUzak()))
+        .onFalse(atisTemizleKomutu());
+
+    cokUzakAtisTetik
+        .whileTrue(manuelAtisKomutu(() -> aticiAltSistemi.atCokUzak()))
+        .onFalse(atisTemizleKomutu());
 
     //  Titreim: atc hedefe ulanca bildir 
     aticiHazirTetik
@@ -215,6 +217,25 @@ public class RobotKapsayici {
         }, aticiAltSistemi, alimAltSistemi));
 
     // Taret iptal edildi - robot govdesi limelight ile dogrudan hizalanir
+  }
+
+  /** Atıcı ısın → RPM'e ulaş (max 3s) → konveyör + atıcı birlikte. */
+  private Command manuelAtisKomutu(Runnable atisMetodu) {
+    return new ParallelCommandGroup(
+        new RunCommand(atisMetodu::run, aticiAltSistemi),
+        new SequentialCommandGroup(
+            new WaitUntilCommand(aticiAltSistemi::isHizaUlasti).withTimeout(3.0),
+            new RunCommand(
+                () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(), alimAltSistemi)
+        )
+    );
+  }
+
+  private Command atisTemizleKomutu() {
+    return new InstantCommand(() -> {
+        aticiAltSistemi.durdur();
+        alimAltSistemi.depodanAticiyaYukariTasimaDurdur();
+    }, aticiAltSistemi, alimAltSistemi);
   }
 
   private void otonomSeciciKur() {
