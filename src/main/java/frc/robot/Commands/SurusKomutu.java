@@ -25,7 +25,9 @@ public class SurusKomutu extends Command {
   private final DoubleSupplier xHizi;
   private final DoubleSupplier yHizi;
   private final DoubleSupplier zDonusu;
-  // SlewRateLimiter kaldırıldı - gecikme yok
+  private final SlewRateLimiter xSinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.OTELEME_SINIRLAMA_ORANI);
+  private final SlewRateLimiter ySinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.OTELEME_SINIRLAMA_ORANI);
+  private final SlewRateLimiter zSinirlayici = new SlewRateLimiter(SurusKontrolSabitleri.DONUS_SINIRLAMA_ORANI);
 
 
   public SurusKomutu(DoubleSupplier xHizi, DoubleSupplier yHizi, DoubleSupplier zDonusu, SurusAltSistemi surusAltSistemi) {
@@ -60,16 +62,11 @@ public class SurusKomutu extends Command {
     double y = eksenSekillendir(hamY, SurusKontrolSabitleri.YANLAMASINA_OLCEK);
     double z = eksenSekillendir(hamZ, SurusKontrolSabitleri.DONUS_OLCEGI);
 
-    // Joystick bosalmissa veya olubolgeliyse fren yap
-    boolean joystikBos = (Math.abs(hamX) < SurusKontrolSabitleri.OLU_BOLGE &&
-                          Math.abs(hamY) < SurusKontrolSabitleri.OLU_BOLGE &&
-                          Math.abs(hamZ) < SurusKontrolSabitleri.OLU_BOLGE);
+    double xKomutu = xSinirlayici.calculate(x);
+    double yKomutu = ySinirlayici.calculate(y);
+    double zKomutu = zSinirlayici.calculate(z);
 
-    if (joystikBos) {
-      surusCikisi.sur(0, 0, 0); // Hicbir komut gonderme, fren yapar
-    } else {
-      surusCikisi.sur(x, y, z);
-    }
+    surusCikisi.sur(xKomutu, yKomutu, zKomutu);
 
     // Ham eksen degerleri (joystick'ten gelen ham deger)
     SmartDashboard.putNumber("Surus/HamEksen_Ileri", hamX);
@@ -79,10 +76,10 @@ public class SurusKomutu extends Command {
     SmartDashboard.putNumber("Surus/SekillendX", x);
     SmartDashboard.putNumber("Surus/SekillendY", y);
     SmartDashboard.putNumber("Surus/SekillendZ", z);
-    // Nihai komutlar (slew rate yok)
-    SmartDashboard.putNumber("Surus/KomutX", joystikBos ? 0 : x);
-    SmartDashboard.putNumber("Surus/KomutY", joystikBos ? 0 : y);
-    SmartDashboard.putNumber("Surus/KomutZ", joystikBos ? 0 : z);
+    // Slew rate sonrasi suruculere giden nihai komutlar
+    SmartDashboard.putNumber("Surus/KomutX", xKomutu);
+    SmartDashboard.putNumber("Surus/KomutY", yKomutu);
+    SmartDashboard.putNumber("Surus/KomutZ", zKomutu);
   }
 
   // Called once the command ends or is interrupted.

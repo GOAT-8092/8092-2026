@@ -119,9 +119,9 @@ public final class Sabitler {
         public static final double X_EKSEN_HASSASIYETI = 0.65;  // Yanal (higher for mecanum efficiency loss)
         public static final double Z_EKSEN_HASSASIYETI = 0.6;   // Rotation
 
-        // Yumusak ivmelenme icin sinirlama \(daha dusuk = daha yumusak\)
-        public static final double OTELEME_SINIRLAMA_ORANI = 1.0;  // Forward/Yanal acceleration (reduced for smoothness)
-        public static final double DONUS_SINIRLAMA_ORANI = 2.0;     // Donus ivmesi \(yumusak donus icin dusuk\)
+        // Yumusaklik + dusuk gecikme dengesi (stutter'i azaltirken cevabi hizli tutar)
+        public static final double OTELEME_SINIRLAMA_ORANI = 3.0;  // Forward/Yanal acceleration
+        public static final double DONUS_SINIRLAMA_ORANI = 4.0;    // Donus ivmesi
 
         // Cikis olcek katsayilari
         public static final double OTELEME_OLCEGI = 0.8;        // Ileri/geri (arttirildi - kare yanit + dusuk olcek robotu hareket ettirmiyordu)
