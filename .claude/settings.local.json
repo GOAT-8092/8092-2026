@@ -4,7 +4,11 @@
       "Bash(curl -s https://limelightvision.io/pages/installation)",
       "Bash(./gradlew compileJava)",
       "Bash(bash gradlew:*)",
-      "Bash(./gradlew deploy:*)"
+      "Bash(./gradlew deploy:*)",
+      "WebFetch(domain:docs.wpilib.org)",
+      "WebSearch",
+      "WebFetch(domain:github.wpilib.org)",
+      "WebFetch(domain:docs.limelightvision.io)"
     ]
   }
 }

@@ -4,13 +4,8 @@
 
 package frc.robot;
 
-import com.pathplanner.lib.auto.AutoBuilder;
-import com.pathplanner.lib.auto.NamedCommands;
-
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
@@ -23,8 +18,6 @@ import edu.wpi.first.wpilibj2.command.RunCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
-import frc.robot.Commands.AprilTagTakipKomutu;
-import frc.robot.Commands.AprilTagaHizalamaKomutu;
 import frc.robot.Commands.LimelightMerkezlemeKomutu;
 import frc.robot.Commands.SurusKomutu;
 import edu.wpi.first.wpilibj2.command.SequentialCommandGroup;
@@ -78,7 +71,6 @@ public class RobotKapsayici {
     aticiAltSistemi  = new AticiAltSistemi();
     defaultKomutlariniKur();
     baglamalariYapilandir();
-    pathPlannerKomutlariniKaydet();
     otonomSeciciKur();
 
     System.out.println("===================================================");
@@ -212,62 +204,21 @@ public class RobotKapsayici {
     // Taret iptal edildi - robot govdesi limelight ile dogrudan hizalanir
   }
 
-  //  PathPlanner 
-
-  private void pathPlannerKomutlariniKaydet() {
-    //  Temel yardmc komutlar 
-    NamedCommands.registerCommand(
-        "AprilTagHizala",
-        new AprilTagaHizalamaKomutu(surusAltSistemi, gorusAltSistemi, 1, 1.0)
-            .withTimeout(2.0));
-    NamedCommands.registerCommand(
-        "AprilTagTakipKisa",
-        new AprilTagTakipKomutu(surusAltSistemi, gorusAltSistemi, 1, 1.5)
-            .withTimeout(1.5));
-    NamedCommands.registerCommand(
-        "SurusuDurdur",
-        new RunCommand(() -> surusAltSistemi.tumMotorlariDurdur(), surusAltSistemi)
-            .withTimeout(0.1));
-
-    // Otonom devre disi / bekleme komutu
-    NamedCommands.registerCommand(
-        "OtonomYapma",
-        new WaitCommand(0.1)
-    );
-  }
-
   private void otonomSeciciKur() {
-    try {
-      otonomSecici = AutoBuilder.buildAutoChooser();
-      otonomSecici.setDefaultOption(
-          "Otonom Yapma",
-          new InstantCommand(() -> SmartDashboard.putString("Auto/OzelBaslangic", "YAPMA")));
-      otonomSecici.addOption("Ozel Oto - LEFT", ozelOtoKomutuOlustur("LEFT", -45.0));
-      otonomSecici.addOption("Ozel Oto - MIDDLE", ozelOtoKomutuOlustur("MIDDLE", 0.0));
-      otonomSecici.addOption("Ozel Oto - RIGHT", ozelOtoKomutuOlustur("RIGHT", 45.0));
-      SmartDashboard.putData("Auto Chooser", otonomSecici);
-    } catch (Exception e) {
-      DriverStation.reportError("PathPlanner otonomlari yuklenemedi: " + e.getMessage(), true);
-      otonomSecici = new SendableChooser<>();
-      otonomSecici.setDefaultOption(
-          "Otonom Yapma",
-          new InstantCommand(() -> SmartDashboard.putString("Auto/OzelBaslangic", "YAPMA")));
-      otonomSecici.addOption("Ozel Oto - LEFT", ozelOtoKomutuOlustur("LEFT", -45.0));
-      otonomSecici.addOption("Ozel Oto - MIDDLE", ozelOtoKomutuOlustur("MIDDLE", 0.0));
-      otonomSecici.addOption("Ozel Oto - RIGHT", ozelOtoKomutuOlustur("RIGHT", 45.0));
-      SmartDashboard.putData("Auto Chooser", otonomSecici);
-    }
+    otonomSecici = new SendableChooser<>();
+    otonomSecici.setDefaultOption("Geri Git + Hizala + At", geriGitHizalaAtisKomutu());
+    SmartDashboard.putData("Auto Chooser", otonomSecici);
   }
 
-  private Command ozelOtoKomutuOlustur(String baslangic, double donusDerece) {
-    final double hedefMesafeMetre = 1.20;
-    final double surusHizi = 0.35;
+  /**
+   * Otonom: 1 m geri git → AprilTag'a kendi ekseni etrafında hizalan → orta atış yap.
+   * Sıra: geri(1m) → LimelightMerkezleme → conveyor(0.3s) → conveyor+atıcı(10s)
+   */
+  private Command geriGitHizalaAtisKomutu() {
+    Command geriKomutu = mesafeIlerleKomutu(1.0, -0.35);
 
-    Command donusKomutu = Math.abs(donusDerece) < 0.01
-        ? new InstantCommand(() -> {}, surusAltSistemi)
-        : hedefeDonusKomutu(donusDerece);
-
-    Command ilerlemeKomutu = mesafeIlerleKomutu(hedefMesafeMetre, surusHizi);
+    Command hizalaKomutu = new LimelightMerkezlemeKomutu(surusAltSistemi, gorusAltSistemi)
+        .withTimeout(4.0);
 
     Command atisKomutu = new ParallelCommandGroup(
         new RunCommand(() -> aticiAltSistemi.atOrta(), aticiAltSistemi)
@@ -275,44 +226,19 @@ public class RobotKapsayici {
         new WaitCommand(0.3)
             .andThen(new RunCommand(
                 () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(), alimAltSistemi)
-                .withTimeout(9.7)))
-        .finallyDo(() -> {
-          aticiAltSistemi.durdur();
-          alimAltSistemi.depodanAticiyaYukariTasimaDurdur();
-        });
+                .withTimeout(9.7))
+    ).finallyDo(() -> {
+        aticiAltSistemi.durdur();
+        alimAltSistemi.depodanAticiyaYukariTasimaDurdur();
+    });
 
     return new SequentialCommandGroup(
-        new InstantCommand(() -> {
-          SmartDashboard.putString("Auto/OzelBaslangic", baslangic);
-          surusAltSistemi.tumMotorlariDurdur();
-        }, surusAltSistemi),
-        donusKomutu,
-        ilerlemeKomutu,
+        new InstantCommand(() ->
+            SmartDashboard.putString("Auto/OzelBaslangic", "GERI_HIZALA_AT"), surusAltSistemi),
+        geriKomutu,
+        hizalaKomutu,
         atisKomutu
     );
-  }
-
-  private Command hedefeDonusKomutu(double donusDerece) {
-    PIDController donusPid = new PIDController(0.02, 0.0, 0.001);
-    donusPid.enableContinuousInput(-180.0, 180.0);
-    donusPid.setTolerance(2.0);
-    final double[] hedefBaslik = new double[1];
-
-    return new FunctionalCommand(
-        () -> {
-          donusPid.reset();
-          hedefBaslik[0] = surusAltSistemi.getHeading().getDegrees() + donusDerece;
-          donusPid.setSetpoint(hedefBaslik[0]);
-        },
-        () -> {
-          double cikis = donusPid.calculate(surusAltSistemi.getHeading().getDegrees());
-          cikis = MathUtil.clamp(cikis, -0.35, 0.35);
-          surusAltSistemi.drive(0.0, 0.0, cikis);
-        },
-        interrupted -> surusAltSistemi.drive(0.0, 0.0, 0.0),
-        donusPid::atSetpoint,
-        surusAltSistemi
-    ).withTimeout(2.0);
   }
 
   private Command mesafeIlerleKomutu(double hedefMesafeMetre, double hiz) {
