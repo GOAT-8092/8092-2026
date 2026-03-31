@@ -45,8 +45,8 @@ public final class Sabitler {
         public static final int TARET_MOTOR_ID = 5;
         public static final boolean TARET_MOTOR_TERS = false;
 
-        // Taret disli orani: 200T ring / 19T pinion = ~10.526:1
-        public static final double TARET_DISLI_ORANI = 200.0 / 19.0;
+        // Taret disli orani: 200T ring / 20T pinion = 10.0:1
+        public static final double TARET_DISLI_ORANI = 200.0 / 20.0;
 
         // Poz tabanli taret takibi - DEVRE DISI (sadece manuel kontrol)
         public static final double TARET_POZ_KP = 0.0;            // derece hata -> motor hizi (0 = otomatik kapali)
