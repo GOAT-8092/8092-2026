@@ -41,9 +41,10 @@ public class AticiAltSistemi extends SubsystemBase {
 
         // PID ayarları - SmartDashboard'dan ayarlanabilir
         // Daha yüksek P ve I değerleri ile RPM kontrolü güçlendirildi
-        SmartDashboard.putNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
-        SmartDashboard.putNumber("Ayarlama/AticiKI", 0.0);
-        SmartDashboard.putNumber("Ayarlama/AticiKD", 0.0);
+        SmartDashboard.putNumber("Ayarlama/AticiKP",  ModulSabitleri.ATICI_KP);
+        SmartDashboard.putNumber("Ayarlama/AticiKI",  0.0);
+        SmartDashboard.putNumber("Ayarlama/AticiKD",  0.0);
+        SmartDashboard.putNumber("Ayarlama/AticiKFF", ModulSabitleri.ATICI_KFF);
 
         if (MotorSabitleri.SURUS_DISI_MOTORLARI_ETKIN) {
             aticiMotoru = new SparkMax(MotorSabitleri.ATICI_MOTOR_ID, MotorType.kBrushless);
@@ -61,17 +62,17 @@ public class AticiAltSistemi extends SubsystemBase {
                 .velocityConversionFactor(1.0)
                 .positionConversionFactor(1.0);
 
-            // Velocity PID + Feedforward - çok daha güçlü kazançlar
-            double kp = SmartDashboard.getNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
-            double ki = SmartDashboard.getNumber("Ayarlama/AticiKI", 0.0);
-            double kd = SmartDashboard.getNumber("Ayarlama/AticiKD", 0.0);
+            // Velocity PID + Feedforward
+            double kp  = SmartDashboard.getNumber("Ayarlama/AticiKP",  ModulSabitleri.ATICI_KP);
+            double ki  = SmartDashboard.getNumber("Ayarlama/AticiKI",  0.0);
+            double kd  = SmartDashboard.getNumber("Ayarlama/AticiKD",  0.0);
+            double kff = SmartDashboard.getNumber("Ayarlama/AticiKFF", ModulSabitleri.ATICI_KFF);
 
             yapilandirma.closedLoop
                 .feedbackSensor(FeedbackSensor.kPrimaryEncoder)
                 .pid(kp, ki, kd)
+                .velocityFF(kff)
                 .outputRange(0.0, ModulSabitleri.ATICI_MAKS_CIKIS);
-            // Feedforward kaldırıldı - PID tam kontrol yapacak
-            yapilandirma.closedLoop.feedForward.kV(ModulSabitleri.ATICI_KV);
 
             aticiMotoru.configure(yapilandirma,
                 ResetMode.kResetSafeParameters,  // Safe parameters reset
@@ -189,12 +190,13 @@ public class AticiAltSistemi extends SubsystemBase {
     /** PID değerlerini SmartDashboard'dan okuyup günceller (tuning için çağır) */
     public void pidAyarlariniGuncelle() {
         if (aticiMotoru != null) {
-            double kp = SmartDashboard.getNumber("Ayarlama/AticiKP", ModulSabitleri.ATICI_KP);
-            double ki = SmartDashboard.getNumber("Ayarlama/AticiKI", 0.0);
-            double kd = SmartDashboard.getNumber("Ayarlama/AticiKD", 0.0);
+            double kp  = SmartDashboard.getNumber("Ayarlama/AticiKP",  ModulSabitleri.ATICI_KP);
+            double ki  = SmartDashboard.getNumber("Ayarlama/AticiKI",  0.0);
+            double kd  = SmartDashboard.getNumber("Ayarlama/AticiKD",  0.0);
+            double kff = SmartDashboard.getNumber("Ayarlama/AticiKFF", ModulSabitleri.ATICI_KFF);
 
             SparkMaxConfig pidGuncelle = new SparkMaxConfig();
-            pidGuncelle.closedLoop.p(kp).i(ki).d(kd);
+            pidGuncelle.closedLoop.p(kp).i(ki).d(kd).velocityFF(kff);
             aticiMotoru.configure(pidGuncelle,
                 ResetMode.kNoResetSafeParameters,
                 PersistMode.kNoPersistParameters);

@@ -211,8 +211,8 @@ public final class Sabitler {
             {1.2,  2.0,  2.8,  3.6,  4.4,  5.2};
         public static final double[] ATIS_RPM_TABLOSU =
             {3800, 4500, 5200, 5350, 5400, 5400};
-        public static final double ATICI_KP = 0.0001;        // Velocity PID P kazanci (REV resmi)
-        public static final double ATICI_KV = 12.0 / 5676.0; // Feedforward: 12V / NEO max RPM
+        public static final double ATICI_KP = 0.0003;         // Velocity PID P kazanci
+        public static final double ATICI_KFF = 1.0 / 5676.0; // Velocity feedforward: 1/NEO max RPM
         public static final double TARET_HIZI = 0.08;
     }
 
