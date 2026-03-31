@@ -202,6 +202,23 @@ public class GorusAltSistemi extends SubsystemBase {
         return sayac;
     }
 
+    /**
+     * Görünen AprilTag'lerden robota olan mesafeyi döner (metre).
+     * rawfiducials dizisindeki distToRobot değerlerinin ortalamasını kullanır.
+     * Tag görünmüyorsa -1 döner.
+     */
+    public double getMesafeHedef() {
+        double[] raw = io.getDoubleArray("rawfiducials", new double[0]);
+        double toplam = 0;
+        int sayac = 0;
+        for (int i = 0; i + 6 < raw.length; i += 7) {
+            toplam += raw[i + 5]; // distToRobot
+            sayac++;
+        }
+        if (sayac > 0) return toplam / sayac;
+        return cachedHasTarget ? getDistanceToTarget() : -1.0;
+    }
+
     /** Görünen tag, mevcut ittifakın atış hedefi mi? */
     public boolean isHedefTagGorunuyor() {
         if (!cachedHasTarget) return false;

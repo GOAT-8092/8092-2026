@@ -163,17 +163,19 @@ public class RobotKapsayici {
         .onTrue(new InstantCommand(() -> surucuProfili.titrestir(0.6)))
         .onFalse(new InstantCommand(() -> surucuProfili.titrestir(0.0)));
 
-    //  Limelight hizalama → conveyor başlat → 0.3s bekle → orta atış
+    //  Limelight hizalama + mesafe tabanlı RPM → hizalanınca conveyor başlat
     limelightHizalaTetik
         .whileTrue(
-            new LimelightMerkezlemeKomutu(surusAltSistemi, gorusAltSistemi)
-                .andThen(new RunCommand(
-                        () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(), alimAltSistemi)
-                    .withTimeout(0.3))
-                .andThen(new ParallelCommandGroup(
-                    new RunCommand(() -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(), alimAltSistemi),
-                    new RunCommand(() -> aticiAltSistemi.atOrta(), aticiAltSistemi)
-                ))
+            new ParallelCommandGroup(
+                // Hizala, bitince conveyor başlat
+                new LimelightMerkezlemeKomutu(surusAltSistemi, gorusAltSistemi)
+                    .andThen(new RunCommand(
+                        () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(), alimAltSistemi)),
+                // Hizalanırken paralel: mesafeye göre RPM
+                new RunCommand(
+                    () -> aticiAltSistemi.atMesafeyeGore(gorusAltSistemi.getMesafeHedef()),
+                    aticiAltSistemi)
+            )
         )
         .onFalse(new InstantCommand(() -> {
             aticiAltSistemi.durdur();

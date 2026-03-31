@@ -13,6 +13,7 @@ import com.revrobotics.spark.config.SparkMaxConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 
 import edu.wpi.first.math.MathUtil;
+import frc.robot.util.AtisHesaplayici;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import frc.robot.Sabitler.ModulSabitleri;
@@ -102,6 +103,12 @@ public class AticiAltSistemi extends SubsystemBase {
         if (aticiMotoru != null) {
             aticiMotoru.set(dutyCycleSinirla(output));
         }
+    }
+
+    /** Limelight mesafesine göre RPM hesapla ve at. mesafeMetre < 0 ise durur. */
+    public void atMesafeyeGore(double mesafeMetre) {
+        if (mesafeMetre < 0) return;
+        atRPM(AtisHesaplayici.hesaplaHedefRpm(mesafeMetre));
     }
 
     /** Varsayilan atici RPM ile at (Shuffleboard'dan ayarlanabilir) */
