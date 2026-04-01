@@ -14,6 +14,7 @@ import edu.wpi.first.wpilibj2.command.InstantCommand;
 import edu.wpi.first.wpilibj2.command.ParallelCommandGroup;
 import edu.wpi.first.wpilibj2.command.ParallelRaceGroup;
 import edu.wpi.first.wpilibj2.command.RunCommand;
+import edu.wpi.first.wpilibj2.command.RepeatCommand;
 import edu.wpi.first.wpilibj2.command.WaitCommand;
 import edu.wpi.first.wpilibj2.command.WaitUntilCommand;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -63,7 +64,7 @@ public class RobotKapsayici {
     aticiAltSistemi  = new AticiAltSistemi();
     defaultKomutlariniKur();
     baglamalariYapilandir();
-    otonomSeciciKur();
+    // otonomSeciciKur();
 
     System.out.println("===================================================");
     System.out.println("ROBOT KAPSAYICI BASLATILDI");
@@ -165,27 +166,40 @@ public class RobotKapsayici {
         .onTrue(new InstantCommand(() -> surucuProfili.titrestir(0.6)))
         .onFalse(new InstantCommand(() -> surucuProfili.titrestir(0.0)));
 
-    //  R2: Kilitle → Döndür → RPM'e ulaş → Konveyör
+    //  R2: Hizala → RPM'e ulaş → Konveyör
     limelightHizalaTetik
         .whileTrue(
             new SequentialCommandGroup(
-                // 1. Hizala + ısın (ikisi paralel; hizalanınca race biter)
+                // 1. Hizala + ısın (max 3 s; hizalanınca veya timeout'ta race biter)
                 new ParallelRaceGroup(
-                    new LimelightMerkezlemeKomutu(surusAltSistemi, gorusAltSistemi),
+                    new LimelightMerkezlemeKomutu(surusAltSistemi, gorusAltSistemi).withTimeout(3.0),
                     new RunCommand(
                         () -> aticiAltSistemi.atMesafeyeGore(gorusAltSistemi.getMesafeHedef()),
                         aticiAltSistemi)
                 ),
-                // 2. RPM'e ulaşana kadar bekle (max 2 s)
-                new WaitUntilCommand(aticiAltSistemi::isHizaUlasti).withTimeout(2.0),
-                // 3. Atıcı + konveyör — düğme bırakılana kadar
+                // 2. RPM'e ulaşana kadar bekle — shooter çalışmaya devam eder (max 2 s)
+                new ParallelRaceGroup(
+                    new WaitUntilCommand(aticiAltSistemi::isHizaUlasti).withTimeout(2.0),
+                    new RunCommand(
+                        () -> aticiAltSistemi.atMesafeyeGore(gorusAltSistemi.getMesafeHedef()),
+                        aticiAltSistemi)
+                ),
+                // 3. Atıcı + konveyör döngüsü (2 sn çalış, 0.5 sn dur) — düğme bırakılana kadar
                 new ParallelCommandGroup(
                     new RunCommand(
                         () -> aticiAltSistemi.atMesafeyeGore(gorusAltSistemi.getMesafeHedef()),
                         aticiAltSistemi),
-                    new RunCommand(
-                        () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(),
-                        alimAltSistemi)
+                    new RepeatCommand(
+                        new SequentialCommandGroup(
+                            new RunCommand(
+                                () -> alimAltSistemi.depodanAticiyaYukariTasimaBaslat(),
+                                alimAltSistemi).withTimeout(1.0),
+                            new InstantCommand(
+                                () -> alimAltSistemi.depodanAticiyaYukariTasimaDurdur(),
+                                alimAltSistemi)
+                                .andThen(new WaitCommand(0.5))
+                        )
+                    )
                 )
             )
         )
@@ -351,7 +365,7 @@ public class RobotKapsayici {
   }
 
   public Command otonomKomutAl() {
-    return otonomSecici.getSelected();
+    return null; // otonomSecici.getSelected();
   }
 
   public GorusAltSistemi gorusAltSistemiAl() {

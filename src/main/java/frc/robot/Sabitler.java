@@ -171,7 +171,7 @@ public final class Sabitler {
         public static final double[] ATIS_MESAFE_TABLOSU_METRE =
             {1.2,  2.0,  2.8,  3.6,  4.4,  5.2};
         public static final double[] ATIS_RPM_TABLOSU =
-            {3200, 3500, 4044, 4161, 4200, 4200};
+            {3300, 3609, 4171, 4291, 4332, 4332};
         public static final double ATICI_KP = 0.0003;         // Velocity PID P kazanci
         public static final double ATICI_KFF = 1.0 / 5676.0; // Velocity feedforward: 1/NEO max RPM
     }
